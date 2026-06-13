@@ -1,0 +1,65 @@
+@import url('https://api.fontshare.com/v2/css?f[]=chillax@400,500,600,700&f[]=satoshi@400,500,700,900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #F7F7FA;
+  --surface: #FFFFFF;
+  --surface-2: #F0F0F5;
+  --text: #111118;
+  --text-2: #6B6B76;
+  --border: rgba(0,0,0,0.07);
+}
+.dark {
+  --bg: #0E0E13;
+  --surface: #1A1A22;
+  --surface-2: #24242E;
+  --text: #F2F2F7;
+  --text-2: #9A9AA6;
+  --border: rgba(255,255,255,0.09);
+}
+
+html, body, #root { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.011em;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Chillax', 'Satoshi', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Logo de la agencia: morado en claro, blanco en oscuro */
+.logo-invert-dark { transition: filter .2s ease; }
+.dark .logo-invert-dark { filter: brightness(0) invert(1); }
+
+.surface { background: var(--surface); }
+.surface-2 { background: var(--surface-2); }
+.text-2 { color: var(--text-2); }
+.hairline { border-color: var(--border); }
+
+::-webkit-scrollbar { height: 8px; width: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes pop-in { from { opacity: 0; transform: scale(.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes panel-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.anim-sheet { animation: sheet-up .28s cubic-bezier(.32,.72,.27,1); }
+.anim-pop { animation: pop-in .22s cubic-bezier(.32,.72,.27,1); }
+.anim-fade { animation: fade-in .18s ease; }
+.anim-panel { animation: panel-in .26s cubic-bezier(.32,.72,.27,1); }
+@media (prefers-reduced-motion: reduce) {
+  .anim-sheet, .anim-pop, .anim-fade, .anim-panel { animation: none; }
+}
+
+input:focus-visible, button:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid #4318C9;
+  outline-offset: 2px;
+}
