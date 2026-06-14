@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Moon, Sun, LogOut, Camera } from 'lucide-react'
+import { Moon, Sun, LogOut, Camera, Bell } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { Avatar } from '../components/ui'
@@ -12,6 +12,14 @@ export default function Perfil() {
   const fileRef = useRef(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const [perm, setPerm] = useState(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported')
+
+  const enableNotifs = async () => {
+    if (typeof Notification === 'undefined') return
+    if (Notification.permission === 'granted') return
+    const p = await Notification.requestPermission()
+    setPerm(p)
+  }
 
   const uploadAvatar = async (e) => {
     const file = e.target.files?.[0]
@@ -82,14 +90,32 @@ export default function Perfil() {
       </div>
 
       <div className="surface rounded-ios border hairline overflow-hidden mb-5">
-        <button onClick={toggle} className="w-full flex items-center justify-between px-4 py-3.5">
+        <button onClick={toggle} className="w-full flex items-center justify-between px-4 py-3.5 border-b hairline">
           <span className="flex items-center gap-3 text-sm font-medium">
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             Apariencia
           </span>
           <span className="text-sm text-2">{theme === 'light' ? 'Claro' : 'Oscuro'}</span>
         </button>
+        <button onClick={enableNotifs} disabled={perm === 'granted' || perm === 'unsupported'}
+          className="w-full flex items-center justify-between px-4 py-3.5 text-left">
+          <span className="flex items-center gap-3 text-sm font-medium">
+            <Bell size={18} />
+            Notificaciones de escritorio
+          </span>
+          <span className="text-sm text-2">
+            {perm === 'granted' ? 'Activadas'
+              : perm === 'denied' ? 'Bloqueadas en el navegador'
+              : perm === 'unsupported' ? 'No disponible'
+              : 'Activar'}
+          </span>
+        </button>
       </div>
+      {perm === 'denied' && (
+        <p className="text-xs text-2 -mt-3 mb-5 px-1">
+          Las bloqueaste antes. Para reactivarlas, cámbialas a mano en los ajustes del sitio en tu navegador (icono junto a la URL).
+        </p>
+      )}
 
       <GlobalTeam />
 

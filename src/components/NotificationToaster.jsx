@@ -34,6 +34,23 @@ export function NotificationToaster({ onOpenTask }) {
             .eq('id', payload.new.id)
             .single()
           const n = data || payload.new
+
+          // Pestaña en segundo plano + permiso concedido → notificación del sistema.
+          const hidden = typeof document !== 'undefined' && document.hidden
+          if (hidden && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            try {
+              const title = `${n.actor?.full_name || 'Alguien'}${n.board?.name ? ' · ' + n.board.name : ''}`
+              const note = new Notification(title, { body: describe(n), icon: '/favicon.svg', tag: n.id })
+              note.onclick = () => {
+                window.focus()
+                if (n.task_id && n.board_id && onOpenTask) onOpenTask({ taskId: n.task_id, boardId: n.board_id })
+                else if (n.board_id) navigate(`/board/${n.board_id}`)
+                note.close()
+              }
+              return
+            } catch (_) { /* si falla, caemos al toast in-app */ }
+          }
+          // Pestaña al frente → toast dentro de la app.
           setToasts(ts => [...ts, n].slice(-4))
           setTimeout(() => dismiss(n.id), 6500)
         })
