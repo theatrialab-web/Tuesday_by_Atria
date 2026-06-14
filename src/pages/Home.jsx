@@ -46,7 +46,7 @@ export default function Home() {
             <button key={ws.id} onClick={() => navigate(`/workspace/${ws.id}`)}
               className="surface rounded-ios border hairline p-4 flex flex-col items-start gap-3 text-left active:scale-[.98] transition-transform hover:shadow-sm">
               <WorkspaceIcon icon={ws.icon} color={ws.color} size={42} />
-              <span className="font-semibold text-sm leading-tight">{ws.name}</span>
+              <span className="font-semibold text-sm leading-tight break-words line-clamp-3 w-full">{ws.name}</span>
             </button>
           ))}
           {!query && (

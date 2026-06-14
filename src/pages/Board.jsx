@@ -96,11 +96,14 @@ export default function Board() {
               onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setEditingName(false) }}
               className="text-lg font-semibold bg-transparent border-b border-brand-light outline-none w-full leading-tight" />
           ) : (
-            <h1 className="text-lg font-semibold truncate leading-tight inline-flex items-center gap-1.5 cursor-text group/bn"
-              onClick={() => setEditingName(true)} title="Clic para renombrar">
-              {board.board.name}
-              <Pencil size={12} className="opacity-0 group-hover/bn:opacity-100 text-2 transition-opacity shrink-0" />
-            </h1>
+            <div className="flex items-start gap-1.5">
+              <h1 onClick={() => setEditingName(true)} title="Clic para renombrar"
+                className="text-lg font-semibold leading-tight line-clamp-2 break-words cursor-text min-w-0">
+                {board.board.name}
+              </h1>
+              <button onClick={() => setEditingName(true)} aria-label="Renombrar"
+                className="mt-1 text-2 opacity-50 hover:opacity-100 shrink-0"><Pencil size={12} /></button>
+            </div>
           )}
           <p className="text-[11px] text-2 truncate">{ws?.name}</p>
         </div>

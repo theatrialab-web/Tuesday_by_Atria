@@ -81,43 +81,50 @@ export default function Workspace() {
 
   return (
     <div className="p-5 sm:p-8 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => setEditWsIcon(true)} aria-label="Cambiar icono del workspace"
-          className="active:scale-95 transition-transform">
-          <WorkspaceIcon icon={workspace.icon} color={workspace.color} size={46} />
-        </button>
-        <div className="flex-1 min-w-0">
-          {editingName ? (
-            <input autoFocus defaultValue={workspace.name}
-              onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== workspace.name) updateWorkspace(id, { name: v }); setEditingName(false) }}
-              onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setEditingName(false) }}
-              className="text-xl font-semibold bg-transparent border-b border-brand-light outline-none w-full" />
-          ) : (
-            <h1 className="text-xl font-semibold truncate cursor-text inline-flex items-center gap-1.5 group/name"
-              onClick={() => setEditingName(true)} title="Clic para renombrar">
-              {workspace.name}
-              <Pencil size={13} className="opacity-0 group-hover/name:opacity-100 text-2 transition-opacity shrink-0" />
-            </h1>
-          )}
-          <p className="text-xs text-2">{boards.length} boards · {members.length} miembros</p>
-        </div>
-        <button onClick={() => setMembersOpen(true)} aria-label="Miembros"
-          className="flex items-center gap-1.5 px-3 py-2 rounded-ios-sm surface border hairline text-sm font-medium">
-          <div className="flex -space-x-1.5">
-            {members.slice(0, 3).map(m => <Avatar key={m.id} profile={m} size={22} />)}
-          </div>
-          <Users size={15} className="text-2" />
-        </button>
-        {isOwner && (
-          <button onClick={handleDelete} aria-label="Eliminar workspace"
-            className="p-2 rounded-ios-sm surface border hairline text-2 hover:text-[#E2445C]">
-            <Trash2 size={16} />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <button onClick={() => setEditWsIcon(true)} aria-label="Cambiar icono del workspace"
+            className="active:scale-95 transition-transform shrink-0">
+            <WorkspaceIcon icon={workspace.icon} color={workspace.color} size={46} />
           </button>
-        )}
-        <button onClick={() => setCreateOpen(true)}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold active:scale-95 transition-transform">
-          <Plus size={15} /> <span className="hidden sm:inline">Nuevo board</span>
-        </button>
+          <div className="min-w-0 flex-1">
+            {editingName ? (
+              <input autoFocus defaultValue={workspace.name}
+                onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== workspace.name) updateWorkspace(id, { name: v }); setEditingName(false) }}
+                onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setEditingName(false) }}
+                className="text-xl font-semibold bg-transparent border-b border-brand-light outline-none w-full" />
+            ) : (
+              <div className="flex items-start gap-1.5">
+                <h1 onClick={() => setEditingName(true)} title="Clic para renombrar"
+                  className="text-xl font-semibold leading-tight line-clamp-2 break-words cursor-text min-w-0">
+                  {workspace.name}
+                </h1>
+                <button onClick={() => setEditingName(true)} aria-label="Renombrar"
+                  className="mt-1 text-2 opacity-50 hover:opacity-100 shrink-0"><Pencil size={13} /></button>
+              </div>
+            )}
+            <p className="text-xs text-2">{boards.length} boards · {members.length} miembros</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={() => setMembersOpen(true)} aria-label="Miembros"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-ios-sm surface border hairline text-sm font-medium">
+            <div className="flex -space-x-1.5">
+              {members.slice(0, 3).map(m => <Avatar key={m.id} profile={m} size={22} />)}
+            </div>
+            <Users size={15} className="text-2" />
+          </button>
+          {isOwner && (
+            <button onClick={handleDelete} aria-label="Eliminar workspace"
+              className="p-2 rounded-ios-sm surface border hairline text-2 hover:text-[#E2445C]">
+              <Trash2 size={16} />
+            </button>
+          )}
+          <button onClick={() => setCreateOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold active:scale-95 transition-transform">
+            <Plus size={15} /> <span className="hidden sm:inline">Nuevo board</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex surface-2 rounded-full p-1 gap-0.5 w-fit mb-5">
@@ -152,7 +159,7 @@ export default function Workspace() {
                   </button>
                   <button onClick={() => navigate(`/board/${b.id}`)}
                     className="flex-1 min-w-0 text-left active:scale-[.98] transition-transform">
-                    <span className="font-semibold text-sm truncate block">{b.name}</span>
+                    <span className="font-semibold text-sm line-clamp-2 break-words block">{b.name}</span>
                   </button>
                 </div>
               )
