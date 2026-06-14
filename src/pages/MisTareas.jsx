@@ -4,6 +4,7 @@ import { CheckSquare, CalendarDays, List, Plus } from 'lucide-react'
 import { useMyTasks } from '../hooks/useMyTasks'
 import { OptionPill, OptionSheet } from '../components/ui'
 import { AddTaskModal } from '../components/AddTaskModal'
+import { TaskQuickView } from '../components/TaskQuickView'
 import { dateGroup, formatDate } from '../lib/constants'
 
 const GROUP_META = [
@@ -46,6 +47,7 @@ export default function MisTareas() {
   const { items, loading, setStatus, refetch } = useMyTasks()
   const navigate = useNavigate()
   const [addOpen, setAddOpen] = useState(false)
+  const [quick, setQuick] = useState(null)
 
   useEffect(() => {
     const h = () => setAddOpen(true)
@@ -116,13 +118,17 @@ export default function MisTareas() {
                   {list.map(item => (
                     <TaskRow key={item.task.id} item={item}
                       onStatus={setStatus}
-                      onOpen={() => navigate(`/board/${item.board.id}`)} />
+                      onOpen={() => setQuick({ taskId: item.task.id, boardId: item.board.id })} />
                   ))}
                 </div>
               </section>
             )
           })}
         </div>
+      )}
+      {quick && (
+        <TaskQuickView taskId={quick.taskId} boardId={quick.boardId}
+          onClose={() => setQuick(null)} onChanged={refetch} />
       )}
     </div>
   )

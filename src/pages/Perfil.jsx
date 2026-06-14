@@ -3,6 +3,7 @@ import { Moon, Sun, LogOut, Camera } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { Avatar } from '../components/ui'
+import { GlobalTeam } from '../components/GlobalTeam'
 import { supabase } from '../lib/supabase'
 
 export default function Perfil() {
@@ -89,6 +90,8 @@ export default function Perfil() {
           <span className="text-sm text-2">{theme === 'light' ? 'Claro' : 'Oscuro'}</span>
         </button>
       </div>
+
+      <GlobalTeam />
 
       <button onClick={signOut}
         className="w-full flex items-center justify-center gap-2 py-3 rounded-ios-sm surface border hairline text-sm font-medium text-[#E2445C] active:scale-[.98] transition-transform">
