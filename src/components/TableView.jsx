@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronDown, ChevronRight, Plus, Trash2, Settings2, Pencil, Check } from 'lucide-react'
 import { OptionPill, OptionSheet } from './ui'
 import { PersonCell, DateCell, TagCell } from './cells'
@@ -77,10 +78,10 @@ function StatusCell({ column, value, onChange, small = false, onEditColumn }) {
 
 function MultiOptionSheet({ open, onClose, title, options, selected, onToggle, onEdit }) {
   if (!open) return null
-  return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" onClick={e => e.stopPropagation()}>
+  return createPortal(
+    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center" onClick={e => e.stopPropagation()}>
       <div className="absolute inset-0 bg-black/30 anim-fade" onClick={onClose} />
-      <div className="relative surface w-full sm:w-72 rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[70dvh] overflow-y-auto">
+      <div className="relative surface w-full sm:w-72 rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
         <p className="text-sm font-semibold mb-3">{title}</p>
         <div className="flex flex-col gap-1.5">
           {options.map(opt => {
@@ -103,7 +104,8 @@ function MultiOptionSheet({ open, onClose, title, options, selected, onToggle, o
           </button>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

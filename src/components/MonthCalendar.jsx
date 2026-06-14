@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { buildMonthGrid, fromDateStr, monthLabel, toDateStr, WEEKDAYS } from '../lib/calendar'
 
 // eventsByDate: { 'YYYY-MM-DD': [{ key, title, color, subtitle? }] }
-export function MonthCalendar({ eventsByDate = {}, onEventClick, isMobile, emptyHint }) {
+export function MonthCalendar({ eventsByDate = {}, onEventClick, onDayClick, isMobile, emptyHint }) {
   const today = new Date()
   const [cursor, setCursor] = useState({ year: today.getFullYear(), month: today.getMonth() })
   const [selected, setSelected] = useState(toDateStr(today))
@@ -84,6 +84,12 @@ export function MonthCalendar({ eventsByDate = {}, onEventClick, isMobile, empty
             ))}
             {dayEvents.length === 0 && <p className="text-xs text-2">Nada programado este día.</p>}
           </div>
+          {onDayClick && (
+            <button onClick={() => onDayClick(selected)}
+              className="mt-3 w-full py-2.5 rounded-ios-sm bg-brand text-white text-sm font-semibold active:scale-[.98] transition-transform">
+              + Agregar tarea este día
+            </button>
+          )}
         </div>
         {empty && emptyHint}
       </div>
@@ -103,13 +109,14 @@ export function MonthCalendar({ eventsByDate = {}, onEventClick, isMobile, empty
               const evs = eventsByDate[day.dateStr] || []
               return (
                 <div key={day.dateStr}
-                  className={`min-h-[110px] p-1.5 border-r border-b hairline flex flex-col ${day.inMonth ? '' : 'opacity-40'}`}>
+                  onClick={() => onDayClick?.(day.dateStr)}
+                  className={`min-h-[110px] p-1.5 border-r border-b hairline flex flex-col group/day ${onDayClick ? 'cursor-pointer hover:bg-brand-soft/40 dark:hover:bg-brand-softDark/40' : ''} ${day.inMonth ? '' : 'opacity-40'}`}>
                   <span className={`text-[11px] font-semibold w-5 h-5 flex items-center justify-center rounded-full mb-1 ${
                     day.isToday ? 'bg-brand text-white' : 'text-2'
                   }`}>{day.date.getDate()}</span>
                   <div className="flex-1 overflow-hidden">
                     {evs.map(ev => (
-                      <button key={ev.key} onClick={() => onEventClick?.(ev)}
+                      <button key={ev.key} onClick={(e) => { e.stopPropagation(); onEventClick?.(ev) }}
                         style={{ backgroundColor: ev.color }}
                         className="w-full text-left text-[11px] leading-tight px-1.5 py-1 rounded-md mb-1 truncate text-white"
                         title={ev.subtitle ? `${ev.title} — ${ev.subtitle}` : ev.title}>
@@ -117,6 +124,9 @@ export function MonthCalendar({ eventsByDate = {}, onEventClick, isMobile, empty
                       </button>
                     ))}
                   </div>
+                  {onDayClick && (
+                    <span className="opacity-0 group-hover/day:opacity-100 text-[10px] text-brand dark:text-brand-light font-medium transition-opacity">+ Agregar</span>
+                  )}
                 </div>
               )
             })}

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Modal, WorkspaceIcon } from './ui'
 import { supabase } from '../lib/supabase'
+import { fromDateStr } from '../lib/calendar'
 import { useAuth } from '../contexts/AuthContext'
 
-export function AddTaskModal({ open, onClose, onCreated }) {
+export function AddTaskModal({ open, onClose, onCreated, initialDate = null }) {
   const { user } = useAuth()
   const [boards, setBoards] = useState([])
   const [boardId, setBoardId] = useState('')
@@ -43,6 +44,16 @@ export function AddTaskModal({ open, onClose, onCreated }) {
           )
         }
       }
+      if (initialDate) {
+        const { data: dateCol } = await supabase.from('board_columns')
+          .select('id').eq('board_id', boardId).eq('type', 'date').limit(1).maybeSingle()
+        if (dateCol) {
+          await supabase.from('task_values').upsert(
+            { task_id: task.id, column_id: dateCol.id, board_id: boardId, value: initialDate, updated_at: new Date().toISOString() },
+            { onConflict: 'task_id,column_id' }
+          )
+        }
+      }
       setTitle('')
       onCreated?.()
       onClose()
@@ -54,12 +65,18 @@ export function AddTaskModal({ open, onClose, onCreated }) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Nueva tarea">
+    <Modal open={open} onClose={onClose} title={initialDate ? 'Nueva tarea con fecha' : 'Nueva tarea'}>
       <div className="flex flex-col gap-4">
         <input autoFocus value={title} onChange={e => setTitle(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && submit()}
           placeholder="¿Qué hay que hacer?"
           className="w-full text-lg font-semibold bg-transparent border-b hairline pb-2 placeholder:text-2" />
+
+        {initialDate && (
+          <span className="self-start text-xs font-medium px-2.5 py-1 rounded-full bg-brand-soft dark:bg-brand-softDark text-brand dark:text-white">
+            📅 {fromDateStr(initialDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </span>
+        )}
 
         <div>
           <label className="text-xs font-semibold uppercase tracking-wide text-2">Board</label>

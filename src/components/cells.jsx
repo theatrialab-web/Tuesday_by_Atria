@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { Check, Plus } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { Check, Plus, X } from 'lucide-react'
 import { Avatar } from './ui'
+import { DateField } from './DatePicker'
 import { formatDate } from '../lib/constants'
 
 // ---------- Persona ----------
@@ -22,10 +24,10 @@ export function PersonCell({ value, members, onChange, compact = false }) {
           <span className="w-6 h-6 rounded-full surface-2 text-[10px] flex items-center justify-center text-2">+{assigned.length - 3}</span>
         )}
       </button>
-      {open && (
-        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" onClick={e => e.stopPropagation()}>
+      {open && createPortal(
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center" onClick={e => e.stopPropagation()}>
           <div className="absolute inset-0 bg-black/30 anim-fade" onClick={() => setOpen(false)} />
-          <div className="relative surface w-full sm:w-72 rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[70dvh] overflow-y-auto">
+          <div className="relative surface w-full sm:w-72 rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
             <p className="text-sm font-semibold mb-3">Asignar a</p>
             {members.map(m => {
               const sel = ids.includes(m.id)
@@ -43,7 +45,8 @@ export function PersonCell({ value, members, onChange, compact = false }) {
               Listo
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
@@ -51,38 +54,45 @@ export function PersonCell({ value, members, onChange, compact = false }) {
 
 // ---------- Fecha ----------
 export function DateCell({ value, onChange, compact = false }) {
-  return (
-    <label onClick={e => e.stopPropagation()} className="relative inline-flex items-center cursor-pointer">
-      <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${value ? 'surface-2' : 'text-2 surface-2'}`}>
-        {value ? formatDate(value) : '—'}
-      </span>
-      <input type="date" value={value || ''}
-        onChange={e => onChange(e.target.value || null)}
-        className="absolute inset-0 opacity-0 w-full cursor-pointer" aria-label="Fecha" />
-    </label>
-  )
+  return <DateField value={value} onChange={onChange} />
 }
 
-// ---------- Marca (texto libre como pill) ----------
+// ---------- Texto libre (una línea + preview al hacer clic) ----------
 export function TagCell({ value, onChange }) {
-  const [editing, setEditing] = useState(false)
+  const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(value || '')
 
-  if (editing) {
-    return (
-      <input autoFocus value={draft}
-        onClick={e => e.stopPropagation()}
-        onChange={e => setDraft(e.target.value)}
-        onBlur={() => { setEditing(false); onChange(draft.trim() || null) }}
-        onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
-        className="w-24 px-2 py-1 text-xs rounded-full surface-2 border hairline"
-        placeholder="Marca" />
-    )
-  }
+  const openPreview = (e) => { e.stopPropagation(); setDraft(value || ''); setOpen(true) }
+  const save = () => { onChange(draft.trim() || null); setOpen(false) }
+
   return (
-    <button onClick={(e) => { e.stopPropagation(); setDraft(value || ''); setEditing(true) }}
-      className={`rounded-full px-2.5 py-1 text-xs font-medium ${value ? 'bg-brand-soft dark:bg-brand-softDark text-brand dark:text-white' : 'surface-2 text-2'}`}>
-      {value || '—'}
-    </button>
+    <>
+      <button onClick={openPreview}
+        className={`block max-w-[220px] truncate text-left rounded-full px-2.5 py-1 text-xs font-medium ${
+          value ? 'bg-brand-soft dark:bg-brand-softDark text-brand dark:text-white' : 'surface-2 text-2'
+        }`}
+        title={value || ''}>
+        {value || '—'}
+      </button>
+      {open && createPortal(
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center" onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-black/30 anim-fade" onClick={() => setOpen(false)} />
+          <div className="relative surface w-full sm:w-96 rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop shadow-2xl pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold">Texto</span>
+              <button onClick={() => setOpen(false)} className="p-1.5 rounded-full surface-2 text-2"><X size={15} /></button>
+            </div>
+            <textarea autoFocus value={draft} onChange={e => setDraft(e.target.value)}
+              rows={5} placeholder="Escribe aquí…"
+              className="w-full text-sm rounded-ios-sm surface-2 p-3 outline-none resize-y leading-relaxed max-h-[50dvh]" />
+            <div className="flex items-center justify-end gap-2 mt-3">
+              <button onClick={() => { setDraft(''); }} className="text-xs font-medium text-2 px-3 py-2">Limpiar</button>
+              <button onClick={save} className="px-4 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold">Guardar</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
   )
 }

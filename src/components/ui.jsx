@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect } from 'react'
 import { X, Briefcase, Rocket, Star, Heart, Zap, Globe, Palette, ShoppingBag } from 'lucide-react'
 import { initials } from '../lib/constants'
@@ -77,10 +78,10 @@ export function OptionPill({ option, onClick, small = false, asButton = true }) 
 // Selector de opciones: dropdown anclado (desktop) o sheet (móvil), simplificado como sheet/modal pequeño
 export function OptionSheet({ open, onClose, title, options, value, onSelect, allowClear = true, onEdit }) {
   if (!open) return null
-  return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+  return createPortal(
+    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/30 anim-fade" onClick={(e) => { e.stopPropagation(); onClose() }} />
-      <div className="relative surface w-full sm:w-72 rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop" onClick={e => e.stopPropagation()}>
+      <div className="relative surface w-full sm:w-72 rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]" onClick={e => e.stopPropagation()}>
         <p className="text-sm font-semibold mb-3">{title}</p>
         <div className="flex flex-col gap-1.5">
           {options.map(opt => (
@@ -108,7 +109,8 @@ export function OptionSheet({ open, onClose, title, options, value, onSelect, al
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

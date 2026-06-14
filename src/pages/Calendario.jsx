@@ -1,14 +1,16 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CalendarDays } from 'lucide-react'
 import { useGlobalCalendar } from '../hooks/useGlobalCalendar'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { MonthCalendar } from '../components/MonthCalendar'
+import { AddTaskModal } from '../components/AddTaskModal'
 
 export default function Calendario() {
-  const { eventsByDate: raw, loading } = useGlobalCalendar()
+  const { eventsByDate: raw, loading, refetch } = useGlobalCalendar()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
+  const [addDate, setAddDate] = useState(null)
 
   // Adaptar al formato de MonthCalendar (coloreado por workspace)
   const eventsByDate = useMemo(() => {
@@ -43,8 +45,11 @@ export default function Calendario() {
       ) : (
         <MonthCalendar eventsByDate={eventsByDate} isMobile={isMobile}
           onEventClick={(ev) => ev.boardId && navigate(`/board/${ev.boardId}`)}
+          onDayClick={(date) => setAddDate(date)}
           emptyHint={emptyHint} />
       )}
+      <AddTaskModal open={!!addDate} onClose={() => setAddDate(null)}
+        initialDate={addDate} onCreated={refetch} />
     </div>
   )
 }

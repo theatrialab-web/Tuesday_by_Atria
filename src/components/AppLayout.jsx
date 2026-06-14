@@ -10,6 +10,7 @@ import { useWorkspaces } from '../hooks/useWorkspaces'
 import { useBoards } from '../hooks/useBoards'
 import { useNotifications } from '../hooks/useMyTasks'
 import { Avatar, WorkspaceIcon, Brand, isEmojiIcon } from './ui'
+import { NotificationToaster } from './NotificationToaster'
 import { CreateWorkspaceModal } from './CreateModals'
 
 
@@ -184,6 +185,7 @@ export default function AppLayout({ children }) {
       <Sidebar />
       <main className="flex-1 min-w-0 pb-20 md:pb-0">{children}</main>
       <BottomNav onCreate={handleCreate} />
+      <NotificationToaster />
       <CreateWorkspaceModal open={createWs} onClose={() => setCreateWs(false)}
         onCreated={(ws) => { setCreateWs(false); navigate(`/workspace/${ws.id}`) }} />
     </div>
