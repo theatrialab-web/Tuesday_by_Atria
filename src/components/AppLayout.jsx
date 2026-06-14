@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Home, CircleCheck, Bell, CircleUser, Plus, PanelLeftClose, PanelLeftOpen,
-  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot,
+  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard,
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -171,6 +171,9 @@ function Sidebar() {
         <NavLink to="/calendario" className={({ isActive }) => navItemCls(isActive)}>
           <CalendarDays size={18} strokeWidth={1.75} className="shrink-0" />{!collapsed && 'Calendario'}
         </NavLink>
+        <NavLink to="/cobros" className={({ isActive }) => navItemCls(isActive)}>
+          <CreditCard size={18} strokeWidth={1.75} className="shrink-0" />{!collapsed && 'Cobros'}
+        </NavLink>
         <NavLink to="/notificaciones" className={({ isActive }) => navItemCls(isActive)}>
           <span className="relative shrink-0">
             <Bell size={18} />
@@ -236,6 +239,7 @@ function BottomNav({ onCreate }) {
         </span>
         Avisos
       </NavLink>
+      <NavLink to="/cobros" className={active}><CreditCard size={21} />Cobros</NavLink>
       <NavLink to="/perfil" className={active}><CircleUser size={21} />Perfil</NavLink>
     </nav>
   )

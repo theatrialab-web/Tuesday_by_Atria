@@ -1,128 +1,162 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CreditCard, Pencil, Plus, Trash2, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Pencil, Plus, Trash2, CheckCircle2, AlertCircle, CalendarPlus, ChevronDown } from 'lucide-react'
 import { Modal } from './ui'
 import { DateField } from './DatePicker'
 import { MonthCalendar } from './MonthCalendar'
-import { useBilling } from '../hooks/useBilling'
+import { useBilling, cycleTotals } from '../hooks/useBilling'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { fromDateStr } from '../lib/calendar'
 
 const CURRENCIES = ['EUR', 'USD', 'MXN', 'COP', 'GBP', 'ARS']
 
-function money(n, currency) {
-  try {
-    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: currency || 'EUR' }).format(n || 0)
-  } catch {
-    return `${n} ${currency || ''}`
-  }
+export function money(n, currency) {
+  try { return new Intl.NumberFormat('es-ES', { style: 'currency', currency: currency || 'EUR' }).format(n || 0) }
+  catch { return `${n} ${currency || ''}` }
+}
+
+function periodLabel(period_month) {
+  if (!period_month) return ''
+  return fromDateStr(period_month).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+}
+
+function nextMonth(period_month) {
+  const base = period_month ? fromDateStr(period_month) : new Date()
+  const d = new Date(base.getFullYear(), base.getMonth() + 1, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
 }
 
 export function BillingView({ workspaceId }) {
-  const { billing, payments, loading, totals, saveBilling, addPayment, deletePayment } = useBilling(workspaceId)
-  const [editOpen, setEditOpen] = useState(false)
-  const [payOpen, setPayOpen] = useState(false)
+  const { cycles, paymentsByCycle, current, loading, createCycle, updateCycle, setPaid, deleteCycle, addPayment, deletePayment } = useBilling(workspaceId)
+  const [editCycle, setEditCycle] = useState(null)   // ciclo a editar (o {nuevo})
+  const [payCycle, setPayCycle] = useState(null)      // ciclo al que abonar
   const isMobile = useIsMobile()
-  const cur = billing?.currency || 'EUR'
+
+  const cur = current?.currency || 'EUR'
+  const curPayments = current ? (paymentsByCycle[current.id] || []) : []
+  const t = cycleTotals(current, curPayments)
 
   const eventsByDate = useMemo(() => {
     const map = {}
-    if (billing?.due_date) map[billing.due_date] = [{ key: 'due', title: 'Fecha de cobro', color: '#E2445C' }]
-    for (const p of payments) {
-      const k = p.paid_on
-      if (!k) continue
-      map[k] = map[k] || []
-      map[k].push({ key: p.id, title: `Abono ${money(p.amount, cur)}`, color: '#00C875' })
+    for (const c of cycles) {
+      if (c.due_date) (map[c.due_date] = map[c.due_date] || []).push({ key: `due-${c.id}`, title: `Cobro ${periodLabel(c.period_month)}`, color: c.status === 'paid' ? '#9A9AA6' : '#E2445C' })
+      for (const p of (paymentsByCycle[c.id] || [])) {
+        if (p.paid_on) (map[p.paid_on] = map[p.paid_on] || []).push({ key: p.id, title: `Abono ${money(p.amount, c.currency)}`, color: '#00C875' })
+      }
     }
     return map
-  }, [billing, payments, cur])
+  }, [cycles, paymentsByCycle])
 
   if (loading) return <p className="text-sm text-2">Cargando información de pago…</p>
 
-  const daysLabel = () => {
-    if (totals.daysLeft == null) return 'Sin fecha de cobro'
-    if (totals.daysLeft === 0) return 'Es hoy'
-    if (totals.daysLeft > 0) return `Faltan ${totals.daysLeft} día${totals.daysLeft === 1 ? '' : 's'}`
-    return `Vencido hace ${Math.abs(totals.daysLeft)} día${Math.abs(totals.daysLeft) === 1 ? '' : 's'}`
+  if (!current) {
+    return (
+      <div className="max-w-md">
+        <div className="rounded-ios border-2 border-dashed hairline p-8 flex flex-col items-center gap-3 text-2 text-center">
+          <AlertCircle size={26} />
+          <p className="text-sm">Aún no hay cobros configurados para este cliente.</p>
+          <button onClick={() => setEditCycle({ period_month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01` })}
+            className="px-4 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold">Configurar primer cobro</button>
+        </div>
+        <CycleEditorModal cycle={editCycle} onClose={() => setEditCycle(null)} createCycle={createCycle} updateCycle={updateCycle} />
+      </div>
+    )
   }
 
-  const markPaid = () => saveBilling({
-    total_amount: billing?.total_amount || 0,
-    currency: cur,
-    due_date: billing?.due_date || null,
-    notes: billing?.notes || null,
-    status: billing?.status === 'paid' ? 'pending' : 'paid',
-  })
+  const daysLabel = () => {
+    if (t.daysLeft == null) return 'Sin fecha de cobro'
+    if (t.daysLeft === 0) return 'El cobro es hoy'
+    if (t.daysLeft > 0) return `Faltan ${t.daysLeft} día${t.daysLeft === 1 ? '' : 's'} para el cobro`
+    return `Vencido hace ${Math.abs(t.daysLeft)} día${Math.abs(t.daysLeft) === 1 ? '' : 's'}`
+  }
 
   return (
     <div className="flex flex-col gap-5 max-w-3xl">
-      {/* Estado */}
+      {/* Mes actual + estado */}
       <div className={`rounded-ios p-4 flex items-center gap-3 ${
-        totals.isPending ? 'bg-[#FFF4E5] dark:bg-[#3a2a10] text-[#B26A00] dark:text-[#FDAB3D]'
+        t.isPending ? 'bg-[#FFF4E5] dark:bg-[#3a2a10] text-[#B26A00] dark:text-[#FDAB3D]'
         : 'bg-[#E9F9F0] dark:bg-[#0f2e1f] text-[#00854a] dark:text-[#33d896]'
       }`}>
-        {totals.isPending ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
+        {t.isPending ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm">
-            {totals.isPending ? 'Pago pendiente' : (totals.fullyPaid || billing?.status === 'paid') ? 'Pagado' : 'Sin importe configurado'}
+          <p className="font-semibold text-sm capitalize">
+            {periodLabel(current.period_month)} · {current.status === 'paid' ? 'Pagado' : 'Pendiente'}
           </p>
           <p className="text-xs opacity-90">{daysLabel()}</p>
         </div>
-        <button onClick={markPaid}
+        <button onClick={() => setPaid(current.id, current.status !== 'paid')}
           className="text-xs font-semibold px-3 py-1.5 rounded-ios-sm surface border hairline text-1 shrink-0">
-          {billing?.status === 'paid' ? 'Marcar pendiente' : 'Marcar pagado'}
+          {current.status === 'paid' ? 'Marcar pendiente' : 'Marcar pagado'}
         </button>
       </div>
 
-      {/* Cifras */}
       <div className="grid grid-cols-3 gap-3">
-        <Stat label="Total a pagar" value={money(totals.total, cur)} />
-        <Stat label="Abonado" value={money(totals.paid, cur)} accent="#00C875" />
-        <Stat label="Restante" value={money(totals.remaining, cur)} accent={totals.remaining > 0 ? '#E2445C' : '#00C875'} />
+        <Stat label="Total del mes" value={money(t.total, cur)} />
+        <Stat label="Abonado" value={money(t.paid, cur)} accent="#00C875" />
+        <Stat label="Restante" value={money(t.remaining, cur)} accent={t.remaining > 0 ? '#E2445C' : '#00C875'} />
       </div>
 
-      <div className="flex gap-2">
-        <button onClick={() => setEditOpen(true)}
+      <div className="flex flex-wrap gap-2">
+        <button onClick={() => setEditCycle(current)}
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-ios-sm surface border hairline text-sm font-medium">
           <Pencil size={14} /> Editar cobro
         </button>
-        <button onClick={() => setPayOpen(true)}
+        <button onClick={() => setPayCycle(current)}
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold active:scale-95 transition-transform">
           <Plus size={15} /> Registrar abono
         </button>
+        {current.status === 'paid' && (
+          <button onClick={() => setEditCycle({ period_month: nextMonth(current.period_month), currency: cur })}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-ios-sm surface border hairline text-sm font-medium text-brand dark:text-brand-light">
+            <CalendarPlus size={15} /> Programar mes siguiente
+          </button>
+        )}
       </div>
 
-      {/* Calendario */}
+      {/* Abonos del mes actual */}
+      {curPayments.length > 0 && (
+        <div className="surface rounded-ios border hairline overflow-hidden">
+          {curPayments.map(p => (
+            <div key={p.id} className="flex items-center gap-3 px-4 py-2.5 border-b hairline last:border-0">
+              <span className="w-2 h-2 rounded-full bg-[#00C875] shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{money(p.amount, cur)}</p>
+                <p className="text-[11px] text-2">{fromDateStr(p.paid_on).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}{p.note ? ` · ${p.note}` : ''}</p>
+              </div>
+              <button onClick={() => deletePayment(p.id)} aria-label="Eliminar abono" className="p-1.5 rounded-ios-sm text-2 hover:text-[#E2445C]"><Trash2 size={15} /></button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="surface rounded-ios border hairline p-4">
         <MonthCalendar eventsByDate={eventsByDate} isMobile={isMobile} />
       </div>
 
-      {/* Abonos */}
-      <div>
-        <h3 className="text-sm font-semibold mb-2">Abonos ({payments.length})</h3>
-        {payments.length === 0 ? (
-          <p className="text-sm text-2">Aún no hay abonos registrados.</p>
-        ) : (
+      {/* Historial de meses */}
+      {cycles.length > 1 && (
+        <div>
+          <h3 className="text-sm font-semibold mb-2">Historial</h3>
           <div className="surface rounded-ios border hairline overflow-hidden">
-            {payments.map(p => (
-              <div key={p.id} className="flex items-center gap-3 px-4 py-3 border-b hairline last:border-0">
-                <span className="w-2 h-2 rounded-full bg-[#00C875] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{money(p.amount, cur)}</p>
-                  <p className="text-[11px] text-2">
-                    {fromDateStr(p.paid_on).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    {p.note ? ` · ${p.note}` : ''}
-                  </p>
+            {cycles.slice(1).map(c => {
+              const ct = cycleTotals(c, paymentsByCycle[c.id] || [])
+              return (
+                <div key={c.id} className="flex items-center gap-3 px-4 py-3 border-b hairline last:border-0">
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${c.status === 'paid' ? 'bg-[#00C875]' : 'bg-[#FDAB3D]'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium capitalize">{periodLabel(c.period_month)}</p>
+                    <p className="text-[11px] text-2">{money(ct.paid, c.currency)} / {money(ct.total, c.currency)} · {c.status === 'paid' ? 'Pagado' : 'Pendiente'}</p>
+                  </div>
+                  <button onClick={() => setPayCycle(c)} className="text-xs font-medium text-brand dark:text-brand-light px-2 py-1">Abonar</button>
+                  <button onClick={() => { if (window.confirm('¿Eliminar este mes y sus abonos?')) deleteCycle(c.id) }} aria-label="Eliminar mes" className="p-1.5 rounded-ios-sm text-2 hover:text-[#E2445C]"><Trash2 size={14} /></button>
                 </div>
-                <button onClick={() => deletePayment(p.id)} aria-label="Eliminar abono"
-                  className="p-1.5 rounded-ios-sm text-2 hover:text-[#E2445C]"><Trash2 size={15} /></button>
-              </div>
-            ))}
+              )
+            })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      <EditBillingModal open={editOpen} onClose={() => setEditOpen(false)} billing={billing} saveBilling={saveBilling} />
-      <AddPaymentModal open={payOpen} onClose={() => setPayOpen(false)} addPayment={addPayment} currency={cur} />
+      <CycleEditorModal cycle={editCycle} onClose={() => setEditCycle(null)} createCycle={createCycle} updateCycle={updateCycle} />
+      <AddPaymentModal cycle={payCycle} onClose={() => setPayCycle(null)} addPayment={addPayment} />
     </div>
   )
 }
@@ -136,7 +170,9 @@ function Stat({ label, value, accent }) {
   )
 }
 
-function EditBillingModal({ open, onClose, billing, saveBilling }) {
+function CycleEditorModal({ cycle, onClose, createCycle, updateCycle }) {
+  const isNew = cycle && !cycle.id
+  const [monthVal, setMonthVal] = useState('')
   const [total, setTotal] = useState('')
   const [currency, setCurrency] = useState('EUR')
   const [dueDate, setDueDate] = useState(null)
@@ -144,31 +180,36 @@ function EditBillingModal({ open, onClose, billing, saveBilling }) {
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    if (open) {
-      setTotal(billing?.total_amount != null ? String(billing.total_amount) : '')
-      setCurrency(billing?.currency || 'EUR')
-      setDueDate(billing?.due_date || null)
-      setNotes(billing?.notes || '')
+    if (cycle) {
+      setMonthVal((cycle.period_month || '').slice(0, 7))
+      setTotal(cycle.total_amount != null ? String(cycle.total_amount) : '')
+      setCurrency(cycle.currency || 'EUR')
+      setDueDate(cycle.due_date || null)
+      setNotes(cycle.notes || '')
     }
-  }, [open])
+  }, [cycle?.id, cycle?.period_month])
+
+  if (!cycle) return null
 
   const save = async () => {
     setBusy(true)
     try {
-      await saveBilling({
-        total_amount: parseFloat(total) || 0,
-        currency,
-        due_date: dueDate,
-        notes: notes.trim() || null,
-        status: billing?.status || 'pending',
-      })
+      const period_month = monthVal ? `${monthVal}-01` : cycle.period_month
+      const patch = { period_month, total_amount: parseFloat(total) || 0, currency, due_date: dueDate, notes: notes.trim() || null }
+      if (isNew) await createCycle(patch)
+      else await updateCycle(cycle.id, patch)
       onClose()
     } finally { setBusy(false) }
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Editar cobro">
+    <Modal open={!!cycle} onClose={onClose} title={isNew ? 'Nuevo mes de cobro' : 'Editar cobro'}>
       <div className="flex flex-col gap-4">
+        <div>
+          <label className="text-xs font-semibold uppercase tracking-wide text-2">Mes</label>
+          <input type="month" value={monthVal} onChange={e => setMonthVal(e.target.value)}
+            className="w-full mt-1.5 text-sm rounded-ios-sm surface-2 px-3 py-2 outline-none" />
+        </div>
         <div>
           <label className="text-xs font-semibold uppercase tracking-wide text-2">Total a pagar</label>
           <div className="flex gap-2 mt-1.5">
@@ -187,47 +228,49 @@ function EditBillingModal({ open, onClose, billing, saveBilling }) {
         <div>
           <label className="text-xs font-semibold uppercase tracking-wide text-2">Notas</label>
           <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
-            placeholder="Condiciones, referencia de factura…"
+            placeholder="Referencia de factura, condiciones…"
             className="w-full mt-1.5 text-sm rounded-ios-sm surface-2 p-3 outline-none resize-y" />
         </div>
-        <button onClick={save} disabled={busy}
+        <button onClick={save} disabled={busy || !monthVal}
           className="w-full py-3 rounded-ios-sm bg-brand text-white font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
-          {busy ? 'Guardando…' : 'Guardar'}
+          {busy ? 'Guardando…' : (isNew ? 'Crear mes' : 'Guardar')}
         </button>
       </div>
     </Modal>
   )
 }
 
-function AddPaymentModal({ open, onClose, addPayment, currency }) {
+function AddPaymentModal({ cycle, onClose, addPayment }) {
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState(null)
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    if (open) {
+    if (cycle) {
       setAmount(''); setNote('')
-      const t = new Date()
-      setDate(`${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`)
+      const tt = new Date()
+      setDate(`${tt.getFullYear()}-${String(tt.getMonth() + 1).padStart(2, '0')}-${String(tt.getDate()).padStart(2, '0')}`)
     }
-  }, [open])
+  }, [cycle?.id])
+
+  if (!cycle) return null
 
   const save = async () => {
     const a = parseFloat(amount)
     if (!a || a <= 0 || busy) return
     setBusy(true)
     try {
-      await addPayment({ amount: a, paid_on: date, note: note.trim() })
+      await addPayment({ cycle_id: cycle.id, amount: a, paid_on: date, note: note.trim() })
       onClose()
     } finally { setBusy(false) }
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Registrar abono">
+    <Modal open={!!cycle} onClose={onClose} title={`Abono · ${periodLabel(cycle.period_month)}`}>
       <div className="flex flex-col gap-4">
         <div>
-          <label className="text-xs font-semibold uppercase tracking-wide text-2">Monto ({currency})</label>
+          <label className="text-xs font-semibold uppercase tracking-wide text-2">Monto ({cycle.currency})</label>
           <input autoFocus type="number" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && save()}
             placeholder="0.00" className="w-full mt-1.5 text-lg font-semibold rounded-ios-sm surface-2 px-3 py-2 outline-none" />
