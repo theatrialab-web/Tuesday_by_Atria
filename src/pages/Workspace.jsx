@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ClipboardList, Plus, Users, Trash2, LayoutGrid, Table2, CalendarDays, CircleDot, Pencil } from 'lucide-react'
+import { ClipboardList, Plus, Users, Trash2, LayoutGrid, Table2, CalendarDays, CircleDot, Pencil, CreditCard } from 'lucide-react'
 import { useWorkspace, useWorkspaces } from '../hooks/useWorkspaces'
 import { useBoards } from '../hooks/useBoards'
 import { useWorkspaceTasks } from '../hooks/useWorkspaceTasks'
@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { WorkspaceIcon, Avatar, OptionSheet } from '../components/ui'
 import { CreateBoardModal, MembersModal } from '../components/CreateModals'
 import { IconPickerModal } from '../components/IconEmojiPicker'
+import { BillingView } from '../components/BillingView'
 import { WorkspaceTable } from '../components/WorkspaceTable'
 import { MonthCalendar } from '../components/MonthCalendar'
 import { BulkBar } from '../components/BulkBar'
@@ -127,11 +128,14 @@ export default function Workspace() {
         </div>
       </div>
 
-      <div className="flex surface-2 rounded-full p-1 gap-0.5 w-fit mb-5">
+      <div className="flex surface-2 rounded-full p-1 gap-0.5 w-fit mb-5 max-w-full overflow-x-auto">
         {tab('boards', 'Boards', LayoutGrid)}
         {tab('table', 'Tabla', Table2)}
         {tab('calendar', 'Calendario', CalendarDays)}
+        {tab('billing', 'Pagos', CreditCard)}
       </div>
+
+      {view === 'billing' && <BillingView workspaceId={id} />}
 
       {view === 'boards' && (
         loading ? (
