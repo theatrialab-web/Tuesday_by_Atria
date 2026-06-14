@@ -6,8 +6,11 @@ export const WORKSPACE_COLORS = [
 ]
 
 export const WORKSPACE_ICONS = [
-  'briefcase', 'rocket', 'star', 'heart',
-  'zap', 'globe', 'palette', 'shopping-bag',
+  'briefcase', 'rocket', 'star', 'heart', 'zap', 'globe', 'palette', 'shopping-bag',
+  'home', 'folder', 'code', 'camera', 'music', 'book', 'coffee', 'gamepad',
+  'gift', 'leaf', 'flame', 'trophy', 'target', 'lightbulb', 'pen', 'bug',
+  'cloud', 'database', 'phone', 'megaphone', 'calendar', 'flag', 'bookmark', 'crown',
+  'gem', 'wrench', 'sparkles', 'building', 'truck', 'headphones', 'pizza',
 ]
 
 export const DEFAULT_STATUS_OPTIONS = [

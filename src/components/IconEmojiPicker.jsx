@@ -1,13 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { WORKSPACE_ICONS, WORKSPACE_COLORS } from '../lib/constants'
 import { Modal, WorkspaceIcon } from './ui'
 import { EMOJIS } from './EmojiPicker'
+import { CustomColorPicker } from './ColorPicker'
 
-// Fila de colores: predefinidos + selector de color personalizado.
+// Fila de colores: predefinidos + selector de color personalizado (hex).
 export function ColorRow({ value, onPick }) {
-  const customRef = useRef(null)
-  const isPreset = WORKSPACE_COLORS.includes(value)
   return (
     <div className="grid grid-cols-8 gap-2 w-full">
       {WORKSPACE_COLORS.map(c => (
@@ -15,14 +13,7 @@ export function ColorRow({ value, onPick }) {
           className={`h-8 rounded-full active:scale-90 transition-transform ${value === c ? 'ring-2 ring-offset-2 ring-brand-light ring-offset-[var(--surface)]' : ''}`}
           style={{ backgroundColor: c }} />
       ))}
-      <button type="button" onClick={() => customRef.current?.click()} aria-label="Color personalizado"
-        className={`h-8 rounded-full relative overflow-hidden flex items-center justify-center border hairline ${!isPreset && value ? 'ring-2 ring-offset-2 ring-brand-light ring-offset-[var(--surface)]' : ''}`}
-        style={{ background: !isPreset && value ? value : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }}>
-        {(isPreset || !value) && <Plus size={14} className="text-white drop-shadow" />}
-        <input ref={customRef} type="color" value={!isPreset && value ? value : '#290880'}
-          onChange={e => onPick(e.target.value)}
-          className="absolute inset-0 opacity-0 cursor-pointer" />
-      </button>
+      <CustomColorPicker value={value} onPick={onPick} />
     </div>
   )
 }

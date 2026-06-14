@@ -188,7 +188,15 @@ function Sidebar() {
       </nav>
 
       <div className="mt-4 px-2 flex-1 overflow-y-auto">
-        {!collapsed && <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-2 mb-1.5">Workspaces</p>}
+        {!collapsed && (
+          <div className="flex items-center justify-between px-3 mb-1.5">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-2">Workspaces</p>
+            <button onClick={() => window.dispatchEvent(new CustomEvent('open-create-workspace'))}
+              aria-label="Nuevo workspace" className="p-1 rounded-ios-sm text-2 hover:surface-2 hover:text-brand dark:hover:text-brand-light">
+              <Plus size={15} />
+            </button>
+          </div>
+        )}
         {!collapsed && <SidebarSearch workspaces={workspaces} />}
         <div className="flex flex-col gap-1">
           {workspaces.map(ws => (
@@ -250,6 +258,12 @@ export default function AppLayout({ children }) {
   const [quickTask, setQuickTask] = useState(null)
   const location = useLocation()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const h = () => setCreateWs(true)
+    window.addEventListener('open-create-workspace', h)
+    return () => window.removeEventListener('open-create-workspace', h)
+  }, [])
 
   // El "+" del bottom nav es contextual: en un board crea tarea (lo maneja
   // la propia página vía evento), en el resto crea workspace.

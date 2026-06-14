@@ -1,6 +1,12 @@
 import { createPortal } from 'react-dom'
 import { useEffect } from 'react'
-import { X, Briefcase, Rocket, Star, Heart, Zap, Globe, Palette, ShoppingBag } from 'lucide-react'
+import {
+  X, Briefcase, Rocket, Star, Heart, Zap, Globe, Palette, ShoppingBag,
+  Home as HomeIcon, Folder, Code, Camera, Music, Book, Coffee, Gamepad2,
+  Gift, Leaf, Flame, Trophy, Target, Lightbulb, PenTool, Bug, Cloud,
+  Database, Smartphone, Megaphone, Calendar, Flag, Bookmark, Crown, Gem,
+  Wrench, Sparkles, Building2, Truck, Headphones, Pizza,
+} from 'lucide-react'
 import { initials } from '../lib/constants'
 
 // Modal centrado en desktop, bottom-sheet en móvil
@@ -117,6 +123,14 @@ export function OptionSheet({ open, onClose, title, options, value, onSelect, al
 export const ICON_MAP = {
   briefcase: Briefcase, rocket: Rocket, star: Star, heart: Heart,
   zap: Zap, globe: Globe, palette: Palette, 'shopping-bag': ShoppingBag,
+  home: HomeIcon, folder: Folder, code: Code, camera: Camera,
+  music: Music, book: Book, coffee: Coffee, gamepad: Gamepad2,
+  gift: Gift, leaf: Leaf, flame: Flame, trophy: Trophy,
+  target: Target, lightbulb: Lightbulb, pen: PenTool, bug: Bug,
+  cloud: Cloud, database: Database, phone: Smartphone, megaphone: Megaphone,
+  calendar: Calendar, flag: Flag, bookmark: Bookmark, crown: Crown,
+  gem: Gem, wrench: Wrench, sparkles: Sparkles, building: Building2,
+  truck: Truck, headphones: Headphones, pizza: Pizza,
 }
 
 // Devuelve negro o blanco según la luminancia del color de fondo.

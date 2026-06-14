@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, Plus, X } from 'lucide-react'
 import { Avatar } from './ui'
@@ -61,19 +61,34 @@ export function DateCell({ value, onChange, compact = false }) {
 export function TagCell({ value, onChange }) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(value || '')
+  const [tip, setTip] = useState(null)
+  const ref = useRef(null)
 
-  const openPreview = (e) => { e.stopPropagation(); setDraft(value || ''); setOpen(true) }
+  const openPreview = (e) => { e.stopPropagation(); setDraft(value || ''); setOpen(true); setTip(null) }
   const save = () => { onChange(draft.trim() || null); setOpen(false) }
+
+  const showTip = () => {
+    if (!value) return
+    const r = ref.current?.getBoundingClientRect()
+    if (r) setTip({ x: r.left, y: r.top })
+  }
 
   return (
     <>
-      <button onClick={openPreview}
+      <button ref={ref} onClick={openPreview}
+        onMouseEnter={showTip} onMouseLeave={() => setTip(null)}
         className={`block max-w-[220px] truncate text-left rounded-full px-2.5 py-1 text-xs font-medium ${
           value ? 'bg-brand-soft dark:bg-brand-softDark text-brand dark:text-white' : 'surface-2 text-2'
-        }`}
-        title={value || ''}>
+        }`}>
         {value || '—'}
       </button>
+      {tip && value && createPortal(
+        <div className="fixed z-[90] max-w-[280px] surface border hairline rounded-ios-sm shadow-xl px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words pointer-events-none anim-fade"
+          style={{ left: Math.min(tip.x, window.innerWidth - 296), top: tip.y - 8, transform: 'translateY(-100%)' }}>
+          {value}
+        </div>,
+        document.body
+      )}
       {open && createPortal(
         <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center" onClick={e => e.stopPropagation()}>
           <div className="absolute inset-0 bg-black/30 anim-fade" onClick={() => setOpen(false)} />

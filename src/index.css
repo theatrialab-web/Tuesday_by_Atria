@@ -24,10 +24,17 @@ html, body, #root { height: 100%; }
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   letter-spacing: -0.011em;
+}
+
+/* Sin borde/halo azul nativo al enfocar (la app usa su propio estilo) */
+input:focus, textarea:focus, select:focus, button:focus,
+input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible,
+[contenteditable]:focus, [contenteditable]:focus-visible {
+  outline: none !important;
 }
 
 h1, h2, h3, h4 {
@@ -38,6 +45,21 @@ h1, h2, h3, h4 {
 /* Logo de la agencia: morado en claro, blanco en oscuro */
 .logo-invert-dark { transition: filter .2s ease; }
 .dark .logo-invert-dark { filter: brightness(0) invert(1); }
+
+/* Slider de tono del selector de color */
+.hue-slider {
+  background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+}
+.hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px; border-radius: 9999px;
+  background: #fff; border: 2px solid rgba(0,0,0,.25); cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+.hue-slider::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 9999px;
+  background: #fff; border: 2px solid rgba(0,0,0,.25); cursor: pointer;
+}
 
 .surface { background: var(--surface); }
 .surface-2 { background: var(--surface-2); }
