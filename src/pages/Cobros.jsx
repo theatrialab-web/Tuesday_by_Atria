@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CreditCard, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useAllBilling } from '../hooks/useBilling'
@@ -21,12 +21,28 @@ function daysLeft(due) {
 export default function Cobros() {
   const { cycles, paidByCycle, loading } = useAllBilling()
   const navigate = useNavigate()
+  const [wsFilter, setWsFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
 
-  const rows = useMemo(() => cycles.map(c => {
+  const allRows = useMemo(() => cycles.map(c => {
     const total = Number(c.total_amount || 0)
     const paid = paidByCycle[c.id] || 0
     return { ...c, total, paid, remaining: Math.max(0, total - paid), dleft: daysLeft(c.due_date) }
   }), [cycles, paidByCycle])
+
+  // Lista de clientes presentes en los cobros (para el filtro)
+  const wsOptions = useMemo(() => {
+    const map = new Map()
+    for (const r of allRows) if (!map.has(r.workspace_id)) map.set(r.workspace_id, r.workspaces?.name || 'Cliente')
+    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1]))
+  }, [allRows])
+
+  const rows = useMemo(() => allRows.filter(r => {
+    if (wsFilter !== 'all' && r.workspace_id !== wsFilter) return false
+    if (statusFilter === 'pending' && r.status === 'paid') return false
+    if (statusFilter === 'paid' && r.status !== 'paid') return false
+    return true
+  }), [allRows, wsFilter, statusFilter])
 
   const pending = rows.filter(r => r.status !== 'paid').sort((a, b) => (a.due_date || '9999') < (b.due_date || '9999') ? -1 : 1)
   const paid = rows.filter(r => r.status === 'paid').sort((a, b) => (a.period_month < b.period_month ? 1 : -1))
@@ -73,23 +89,43 @@ export default function Cobros() {
 
       {loading ? (
         <p className="text-sm text-2">Cargando…</p>
-      ) : rows.length === 0 ? (
+      ) : allRows.length === 0 ? (
         <div className="rounded-ios border-2 border-dashed hairline p-10 flex flex-col items-center gap-3 text-2 text-center">
           <CreditCard size={28} />
           <p className="text-sm">Aún no hay cobros. Configúralos en la pestaña «Pagos» de cada workspace.</p>
         </div>
       ) : (
         <>
+          <div className="flex flex-wrap items-center gap-2 mb-5">
+            <select value={wsFilter} onChange={e => setWsFilter(e.target.value)}
+              className="text-sm rounded-ios-sm surface-2 px-3 py-2 outline-none max-w-[60%]">
+              <option value="all">Todos los clientes</option>
+              {wsOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+            </select>
+            <div className="flex surface-2 rounded-full p-1 gap-0.5">
+              {[['all', 'Todos'], ['pending', 'Pendientes'], ['paid', 'Pagados']].map(([k, label]) => (
+                <button key={k} onClick={() => setStatusFilter(k)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold ${statusFilter === k ? 'bg-brand text-white' : 'text-2'}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3 mb-6">
             <div className="surface rounded-ios border hairline p-4">
               <p className="text-[11px] text-2 mb-1">Pendiente de cobro</p>
               <p className="text-xl font-semibold text-[#E2445C]">{money(totalPending, rows[0]?.currency)}</p>
             </div>
             <div className="surface rounded-ios border hairline p-4">
-              <p className="text-[11px] text-2 mb-1">Cobrado (total)</p>
+              <p className="text-[11px] text-2 mb-1">Cobrado</p>
               <p className="text-xl font-semibold text-[#00C875]">{money(totalCollected, rows[0]?.currency)}</p>
             </div>
           </div>
+
+          {rows.length === 0 && (
+            <p className="text-sm text-2 text-center py-8">No hay cobros con este filtro.</p>
+          )}
 
           {pending.length > 0 && (
             <section className="mb-6">
