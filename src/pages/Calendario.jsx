@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { CalendarDays } from 'lucide-react'
 import { useGlobalCalendar } from '../hooks/useGlobalCalendar'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { MonthCalendar } from '../components/MonthCalendar'
 import { AddTaskModal } from '../components/AddTaskModal'
+import { TaskQuickView } from '../components/TaskQuickView'
 
 export default function Calendario() {
   const { eventsByDate: raw, loading, refetch } = useGlobalCalendar()
-  const navigate = useNavigate()
   const isMobile = useIsMobile()
   const [addDate, setAddDate] = useState(null)
+  const [quick, setQuick] = useState(null)
 
   // Adaptar al formato de MonthCalendar (coloreado por workspace)
   const eventsByDate = useMemo(() => {
@@ -22,6 +22,7 @@ export default function Calendario() {
         color: ev.color,
         subtitle: `${ev.wsName} · ${ev.boardName}`,
         boardId: ev.boardId,
+        taskId: ev.taskId,
       }))
     }
     return map
@@ -44,12 +45,16 @@ export default function Calendario() {
         <p className="text-sm text-2">Cargando…</p>
       ) : (
         <MonthCalendar eventsByDate={eventsByDate} isMobile={isMobile}
-          onEventClick={(ev) => ev.boardId && navigate(`/board/${ev.boardId}`)}
+          onEventClick={(ev) => ev.taskId && ev.boardId && setQuick({ taskId: ev.taskId, boardId: ev.boardId })}
           onDayClick={(date) => setAddDate(date)}
           emptyHint={emptyHint} />
       )}
       <AddTaskModal open={!!addDate} onClose={() => setAddDate(null)}
         initialDate={addDate} onCreated={refetch} />
+      {quick && (
+        <TaskQuickView taskId={quick.taskId} boardId={quick.boardId}
+          onClose={() => setQuick(null)} onChanged={refetch} />
+      )}
     </div>
   )
 }
