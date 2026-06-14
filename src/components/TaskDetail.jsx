@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Paperclip, Send, Trash2, FileText, Plus, PanelRightClose, Bold, Italic, Strikethrough, Pencil } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Paperclip, Send, Trash2, FileText, Plus, PanelRightClose, Bold, Italic, Strikethrough, Pencil, ExternalLink } from 'lucide-react'
 import { Modal, Avatar } from './ui'
 import { renderRich, wrapSelection, insertAtCursor } from '../lib/richtext'
 import { EmojiPicker } from './EmojiPicker'
@@ -327,6 +328,7 @@ function Files({ task, boardId }) {
 }
 
 export function TaskDetail({ task, board, columns, values, members, subtasksOf, createTask, updateTask, deleteTask, setValue, onClose, onEditColumn, isMobile = false, width = 460, onResize }) {
+  const navigate = useNavigate()
   const [title, setTitle] = useState(task?.title || '')
   useEffect(() => { setTitle(task?.title || '') }, [task?.id])
 
@@ -341,6 +343,12 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
 
   const body = (
     <div className="flex flex-col gap-6">
+      {board?.id && (
+        <button onClick={() => { onClose?.(); navigate(`/board/${board.id}`) }}
+          className="sm:hidden self-start -mb-2 inline-flex items-center gap-1 text-xs font-medium text-brand dark:text-brand-light">
+          <ExternalLink size={12} /> Ir al board «{board.name}»
+        </button>
+      )}
       <input value={title}
         onChange={e => setTitle(e.target.value)}
         onBlur={() => title.trim() && title !== task.title && updateTask(task.id, { title: title.trim() })}
@@ -401,7 +409,10 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
         <div className="w-0.5 h-full mx-auto bg-transparent group-hover/resize:bg-brand-light transition-colors" />
       </div>
       <div className="flex items-center justify-between px-5 py-3 border-b hairline shrink-0">
-        <span className="text-sm font-medium text-2 truncate">{board?.name || 'Tarea'}</span>
+        <button onClick={() => { if (board?.id) { onClose?.(); navigate(`/board/${board.id}`) } }}
+          className="text-sm font-medium text-2 truncate inline-flex items-center gap-1 hover:text-brand dark:hover:text-brand-light">
+          {board?.name || 'Tarea'} {board?.id && <ExternalLink size={12} className="shrink-0" />}
+        </button>
         <button onClick={onClose} aria-label="Cerrar" className="p-1.5 rounded-full surface-2 text-2 hover:opacity-80">
           <PanelRightClose size={16} />
         </button>

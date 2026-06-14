@@ -12,6 +12,7 @@ import { useBoards } from '../hooks/useBoards'
 import { useNotifications } from '../hooks/useMyTasks'
 import { Avatar, WorkspaceIcon, Brand, isEmojiIcon } from './ui'
 import { NotificationToaster } from './NotificationToaster'
+import { TaskQuickView } from './TaskQuickView'
 import { CreateWorkspaceModal } from './CreateModals'
 
 
@@ -242,6 +243,7 @@ function BottomNav({ onCreate }) {
 
 export default function AppLayout({ children }) {
   const [createWs, setCreateWs] = useState(false)
+  const [quickTask, setQuickTask] = useState(null)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -264,7 +266,11 @@ export default function AppLayout({ children }) {
       <Sidebar />
       <main className="flex-1 min-w-0 pb-20 md:pb-0">{children}</main>
       <BottomNav onCreate={handleCreate} />
-      <NotificationToaster />
+      <NotificationToaster onOpenTask={setQuickTask} />
+      {quickTask && (
+        <TaskQuickView taskId={quickTask.taskId} boardId={quickTask.boardId}
+          onClose={() => setQuickTask(null)} />
+      )}
       <CreateWorkspaceModal open={createWs} onClose={() => setCreateWs(false)}
         onCreated={(ws) => { setCreateWs(false); navigate(`/workspace/${ws.id}`) }} />
     </div>

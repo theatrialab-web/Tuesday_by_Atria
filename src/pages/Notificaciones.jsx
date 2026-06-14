@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, UserPlus, AtSign, RefreshCw, CheckCheck } from 'lucide-react'
 import { useNotifications } from '../hooks/useMyTasks'
 import { Avatar } from '../components/ui'
+import { TaskQuickView } from '../components/TaskQuickView'
 
 const TYPE_META = {
   assigned: { icon: UserPlus, color: '#0086C0', verb: 'te asignó a' },
@@ -20,6 +22,13 @@ function timeAgo(iso) {
 export default function Notificaciones() {
   const { notifications, unreadCount, loading, markRead, markAllRead } = useNotifications()
   const navigate = useNavigate()
+  const [quick, setQuick] = useState(null)
+
+  const openNotif = (n) => {
+    if (!n.read) markRead(n.id)
+    if (n.task_id && n.board_id) setQuick({ taskId: n.task_id, boardId: n.board_id })
+    else if (n.board_id) navigate(`/board/${n.board_id}`)
+  }
 
   return (
     <div className="p-5 sm:p-8 max-w-3xl mx-auto">
@@ -50,7 +59,7 @@ export default function Notificaciones() {
             const Icon = meta.icon
             return (
               <button key={n.id}
-                onClick={() => { if (!n.read) markRead(n.id); if (n.board_id) navigate(`/board/${n.board_id}`) }}
+                onClick={() => openNotif(n)}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left border-b hairline last:border-0 ${n.read ? '' : 'bg-brand-soft/50 dark:bg-brand-softDark/40'}`}>
                 <div className="relative">
                   <Avatar profile={n.actor} size={36} />
@@ -72,6 +81,9 @@ export default function Notificaciones() {
             )
           })}
         </div>
+      )}
+      {quick && (
+        <TaskQuickView taskId={quick.taskId} boardId={quick.boardId} onClose={() => setQuick(null)} />
       )}
     </div>
   )

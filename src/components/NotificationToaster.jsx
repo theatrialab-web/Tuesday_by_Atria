@@ -14,7 +14,7 @@ function describe(n) {
   return n.content || 'Nueva notificación'
 }
 
-export function NotificationToaster() {
+export function NotificationToaster({ onOpenTask }) {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [toasts, setToasts] = useState([])
@@ -49,7 +49,11 @@ export function NotificationToaster() {
         <div key={n.id} role="status"
           className="surface border hairline rounded-ios shadow-2xl p-3 flex items-start gap-3 anim-pop">
           <Avatar profile={n.actor} size={34} />
-          <button onClick={() => { dismiss(n.id); if (n.board_id) navigate(`/board/${n.board_id}`) }}
+          <button onClick={() => {
+              dismiss(n.id)
+              if (n.task_id && n.board_id && onOpenTask) onOpenTask({ taskId: n.task_id, boardId: n.board_id })
+              else if (n.board_id) navigate(`/board/${n.board_id}`)
+            }}
             className="flex-1 min-w-0 text-left">
             <p className="text-[13px] font-semibold truncate">
               {n.actor?.full_name || 'Alguien'}

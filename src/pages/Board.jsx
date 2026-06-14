@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { ChevronLeft, Table2, Kanban as KanbanIcon, CalendarDays, Trash2, CircleDot } from 'lucide-react'
+import { ChevronLeft, Table2, Kanban as KanbanIcon, CalendarDays, Trash2, CircleDot, Pencil } from 'lucide-react'
 import { useBoard } from '../hooks/useBoard'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { TableView, CardsView } from '../components/TableView'
@@ -32,6 +32,7 @@ export default function Board() {
   const [selectedIds, setSelectedIds] = useState([])
   const [statusPicker, setStatusPicker] = useState(false)
   const [editIcon, setEditIcon] = useState(false)
+  const [editingName, setEditingName] = useState(false)
   const [panelWidth, setPanelWidth] = useState(() => {
     const v = parseInt(localStorage.getItem('task-panel-width') || '', 10)
     return Number.isFinite(v) ? Math.min(820, Math.max(360, v)) : 460
@@ -89,7 +90,18 @@ export default function Board() {
           <WorkspaceIcon icon={board.board.icon || '📋'} color={board.board.color || '#E4E4E9'} size={36} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-semibold truncate leading-tight">{board.board.name}</h1>
+          {editingName ? (
+            <input autoFocus defaultValue={board.board.name}
+              onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== board.board.name) board.updateBoardMeta({ name: v }); setEditingName(false) }}
+              onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setEditingName(false) }}
+              className="text-lg font-semibold bg-transparent border-b border-brand-light outline-none w-full leading-tight" />
+          ) : (
+            <h1 className="text-lg font-semibold truncate leading-tight inline-flex items-center gap-1.5 cursor-text group/bn"
+              onClick={() => setEditingName(true)} title="Clic para renombrar">
+              {board.board.name}
+              <Pencil size={12} className="opacity-0 group-hover/bn:opacity-100 text-2 transition-opacity shrink-0" />
+            </h1>
+          )}
           <p className="text-[11px] text-2 truncate">{ws?.name}</p>
         </div>
         <div className="flex surface-2 rounded-full p-1 gap-0.5">
