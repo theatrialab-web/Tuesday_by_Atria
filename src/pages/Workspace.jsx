@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ClipboardList, Plus, Users, Trash2, LayoutGrid, Table2, CalendarDays, CircleDot } from 'lucide-react'
+import { ClipboardList, Plus, Users, Trash2, LayoutGrid, Table2, CalendarDays, CircleDot, Pencil } from 'lucide-react'
 import { useWorkspace, useWorkspaces } from '../hooks/useWorkspaces'
 import { useBoards } from '../hooks/useBoards'
 import { useWorkspaceTasks } from '../hooks/useWorkspaceTasks'
@@ -31,6 +31,7 @@ export default function Workspace() {
   const [statusPicker, setStatusPicker] = useState(false)
   const [editWsIcon, setEditWsIcon] = useState(false)
   const [editBoard, setEditBoard] = useState(null)
+  const [editingName, setEditingName] = useState(false)
 
   useEffect(() => { localStorage.setItem(`ws-view-${id}`, view) }, [view, id])
   useEffect(() => { setSelBoards([]); setSelTasks([]) }, [view, id])
@@ -86,7 +87,18 @@ export default function Workspace() {
           <WorkspaceIcon icon={workspace.icon} color={workspace.color} size={46} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-semibold truncate">{workspace.name}</h1>
+          {editingName ? (
+            <input autoFocus defaultValue={workspace.name}
+              onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== workspace.name) updateWorkspace(id, { name: v }); setEditingName(false) }}
+              onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setEditingName(false) }}
+              className="text-xl font-semibold bg-transparent border-b border-brand-light outline-none w-full" />
+          ) : (
+            <h1 className="text-xl font-semibold truncate cursor-text inline-flex items-center gap-1.5 group/name"
+              onClick={() => setEditingName(true)} title="Clic para renombrar">
+              {workspace.name}
+              <Pencil size={13} className="opacity-0 group-hover/name:opacity-100 text-2 transition-opacity shrink-0" />
+            </h1>
+          )}
           <p className="text-xs text-2">{boards.length} boards · {members.length} miembros</p>
         </div>
         <button onClick={() => setMembersOpen(true)} aria-label="Miembros"
@@ -136,7 +148,7 @@ export default function Workspace() {
                     className="w-4 h-4 rounded accent-brand shrink-0" aria-label="Seleccionar board" />
                   <button onClick={(e) => { e.stopPropagation(); setEditBoard(b) }}
                     aria-label="Cambiar icono del board" className="shrink-0 active:scale-95 transition-transform">
-                    <WorkspaceIcon icon={b.icon || '📋'} color={workspace.color} size={40} />
+                    <WorkspaceIcon icon={b.icon || '📋'} color={b.color || '#E4E4E9'} size={40} />
                   </button>
                   <button onClick={() => navigate(`/board/${b.id}`)}
                     className="flex-1 min-w-0 text-left active:scale-[.98] transition-transform">
@@ -216,7 +228,7 @@ export default function Workspace() {
         title="Icono del workspace" value={workspace.icon} color={workspace.color} withColor
         onSave={(patch) => updateWorkspace(id, patch)} />
       <IconPickerModal open={!!editBoard} onClose={() => setEditBoard(null)}
-        title="Icono del board" value={editBoard?.icon || '📋'} color={workspace.color}
+        title="Icono y color del board" value={editBoard?.icon || '📋'} color={editBoard?.color || '#E4E4E9'} withColor
         onSave={(patch) => updateBoard(editBoard.id, patch)} />
     </div>
   )

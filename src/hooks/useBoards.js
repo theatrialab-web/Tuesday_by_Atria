@@ -25,10 +25,10 @@ export function useBoards(workspaceId) {
     return () => window.removeEventListener('boards-changed', h)
   }, [fetchBoards])
 
-  const createBoard = async (name, icon = null) => {
+  const createBoard = async (name, icon = null, color = null) => {
     const { data: board, error } = await supabase
       .from('boards')
-      .insert({ workspace_id: workspaceId, name, icon, position: boards.length })
+      .insert({ workspace_id: workspaceId, name, icon, color, position: boards.length })
       .select()
       .single()
     if (error) throw error

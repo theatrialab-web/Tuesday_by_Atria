@@ -1,7 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Plus } from 'lucide-react'
 import { WORKSPACE_ICONS, WORKSPACE_COLORS } from '../lib/constants'
 import { Modal, WorkspaceIcon } from './ui'
 import { EMOJIS } from './EmojiPicker'
+
+// Fila de colores: predefinidos + selector de color personalizado.
+export function ColorRow({ value, onPick }) {
+  const customRef = useRef(null)
+  const isPreset = WORKSPACE_COLORS.includes(value)
+  return (
+    <div className="grid grid-cols-8 gap-2 w-full">
+      {WORKSPACE_COLORS.map(c => (
+        <button key={c} type="button" onClick={() => onPick(c)} aria-label={`Color ${c}`}
+          className={`h-8 rounded-full active:scale-90 transition-transform ${value === c ? 'ring-2 ring-offset-2 ring-brand-light ring-offset-[var(--surface)]' : ''}`}
+          style={{ backgroundColor: c }} />
+      ))}
+      <button type="button" onClick={() => customRef.current?.click()} aria-label="Color personalizado"
+        className={`h-8 rounded-full relative overflow-hidden flex items-center justify-center border hairline ${!isPreset && value ? 'ring-2 ring-offset-2 ring-brand-light ring-offset-[var(--surface)]' : ''}`}
+        style={{ background: !isPreset && value ? value : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }}>
+        {(isPreset || !value) && <Plus size={14} className="text-white drop-shadow" />}
+        <input ref={customRef} type="color" value={!isPreset && value ? value : '#290880'}
+          onChange={e => onPick(e.target.value)}
+          className="absolute inset-0 opacity-0 cursor-pointer" />
+      </button>
+    </div>
+  )
+}
 
 // Selector con dos pestañas: iconos (lucide) y emojis.
 export function IconEmojiGrid({ value, onPick }) {
@@ -65,15 +89,7 @@ export function IconPickerModal({ open, onClose, title = 'Editar icono', value, 
     <Modal open={open} onClose={onClose} title={title}>
       <div className="flex flex-col items-center gap-4">
         <WorkspaceIcon icon={icon} color={withColor ? col : color} size={64} />
-        {withColor && (
-          <div className="grid grid-cols-8 gap-2 w-full">
-            {WORKSPACE_COLORS.map(c => (
-              <button key={c} onClick={() => setCol(c)} aria-label={`Color ${c}`}
-                className={`h-8 rounded-full active:scale-90 transition-transform ${col === c ? 'ring-2 ring-offset-2 ring-brand-light ring-offset-[var(--surface)]' : ''}`}
-                style={{ backgroundColor: c }} />
-            ))}
-          </div>
-        )}
+        {withColor && <ColorRow value={col} onPick={setCol} />}
         <IconEmojiGrid value={icon} onPick={setIcon} />
         <button onClick={save} disabled={busy}
           className="w-full py-3 rounded-ios-sm bg-brand text-white font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">

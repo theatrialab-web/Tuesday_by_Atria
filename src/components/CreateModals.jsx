@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Modal, Avatar, WorkspaceIcon } from './ui'
-import { WORKSPACE_COLORS } from '../lib/constants'
-import { IconEmojiGrid } from './IconEmojiPicker'
+import { WORKSPACE_COLORS, DEFAULT_ICON_COLOR } from '../lib/constants'
+import { IconEmojiGrid, ColorRow } from './IconEmojiPicker'
 import { useWorkspaces } from '../hooks/useWorkspaces'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -10,7 +10,7 @@ export function CreateWorkspaceModal({ open, onClose, onCreated }) {
   const { createWorkspace } = useWorkspaces()
   const [name, setName] = useState('')
   const [icon, setIcon] = useState('briefcase')
-  const [color, setColor] = useState('#290880')
+  const [color, setColor] = useState(DEFAULT_ICON_COLOR)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
@@ -37,13 +37,7 @@ export function CreateWorkspaceModal({ open, onClose, onCreated }) {
           placeholder="Nombre del workspace"
           className="w-full text-center text-lg font-semibold bg-transparent border-b hairline pb-2 placeholder:text-2" />
 
-        <div className="grid grid-cols-8 gap-2 w-full">
-          {WORKSPACE_COLORS.map(c => (
-            <button key={c} onClick={() => setColor(c)} aria-label={`Color ${c}`}
-              className={`h-8 rounded-full transition-transform active:scale-90 ${color === c ? 'ring-2 ring-offset-2 ring-brand-light ring-offset-[var(--surface)]' : ''}`}
-              style={{ backgroundColor: c }} />
-          ))}
-        </div>
+        <ColorRow value={color} onPick={setColor} />
         <IconEmojiGrid value={icon} onPick={setIcon} />
 
         {error && <p className="text-xs text-[#E2445C]">{error}</p>}
@@ -60,6 +54,7 @@ export function CreateWorkspaceModal({ open, onClose, onCreated }) {
 export function CreateBoardModal({ open, onClose, onCreate }) {
   const [name, setName] = useState('')
   const [icon, setIcon] = useState('📋')
+  const [color, setColor] = useState(DEFAULT_ICON_COLOR)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
@@ -67,7 +62,7 @@ export function CreateBoardModal({ open, onClose, onCreate }) {
     if (!name.trim() || busy) return
     setBusy(true); setError(null)
     try {
-      await onCreate(name.trim(), icon)
+      await onCreate(name.trim(), icon, color)
       setName('')
       onClose()
     } catch (e) {
@@ -81,12 +76,13 @@ export function CreateBoardModal({ open, onClose, onCreate }) {
     <Modal open={open} onClose={onClose} title="Nuevo board">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <WorkspaceIcon icon={icon} color="#290880" size={44} />
+          <WorkspaceIcon icon={icon} color={color} size={44} />
           <input autoFocus value={name} onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && submit()}
             placeholder="Nombre del board"
             className="flex-1 text-lg font-semibold bg-transparent border-b hairline pb-2 placeholder:text-2" />
         </div>
+        <ColorRow value={color} onPick={setColor} />
         <IconEmojiGrid value={icon} onPick={setIcon} />
         <p className="text-xs text-2">
           Se creará con las columnas: Estado, Persona, Fecha, Marca y Urgencia.

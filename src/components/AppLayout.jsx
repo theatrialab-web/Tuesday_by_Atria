@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Home, CircleCheck, Bell, CircleUser, Plus, PanelLeftClose, PanelLeftOpen,
-  Moon, Sun, LogOut, CalendarDays, ChevronRight,
+  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot,
 } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useWorkspaces } from '../hooks/useWorkspaces'
@@ -13,6 +14,83 @@ import { Avatar, WorkspaceIcon, Brand, isEmojiIcon } from './ui'
 import { NotificationToaster } from './NotificationToaster'
 import { CreateWorkspaceModal } from './CreateModals'
 
+
+function SidebarSearch({ workspaces }) {
+  const [q, setQ] = useState('')
+  const [results, setResults] = useState({ ws: [], boards: [], tasks: [] })
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const term = q.trim()
+    if (term.length < 2) { setResults({ ws: [], boards: [], tasks: [] }); return }
+    let cancelled = false
+    const t = setTimeout(async () => {
+      const lc = term.toLowerCase()
+      const ws = workspaces.filter(w => w.name.toLowerCase().includes(lc)).slice(0, 5)
+      const [boardsRes, tasksRes] = await Promise.all([
+        supabase.from('boards').select('id, name, icon, color').ilike('name', `%${term}%`).limit(6),
+        supabase.from('tasks').select('id, title, board_id').ilike('title', `%${term}%`).limit(8),
+      ])
+      if (!cancelled) setResults({ ws, boards: boardsRes.data || [], tasks: tasksRes.data || [] })
+    }, 250)
+    return () => { cancelled = true; clearTimeout(t) }
+  }, [q, workspaces])
+
+  const go = (path) => { setQ(''); setResults({ ws: [], boards: [], tasks: [] }); navigate(path) }
+  const has = results.ws.length || results.boards.length || results.tasks.length
+
+  return (
+    <div className="px-1 mb-2">
+      <div className="flex items-center gap-2 px-2.5 py-2 rounded-ios-sm surface-2">
+        <Search size={14} className="text-2 shrink-0" />
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar…"
+          className="bg-transparent text-sm outline-none w-full min-w-0" />
+        {q && <button onClick={() => setQ('')} aria-label="Limpiar"><X size={13} className="text-2" /></button>}
+      </div>
+      {q.trim().length >= 2 && (
+        <div className="mt-1 max-h-80 overflow-y-auto rounded-ios-sm surface border hairline shadow-lg p-1">
+          {!has && <p className="text-xs text-2 px-2 py-3 text-center">Sin resultados</p>}
+          {results.ws.length > 0 && (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-2 px-2 pt-1.5 pb-0.5">Workspaces</p>
+              {results.ws.map(w => (
+                <button key={w.id} onClick={() => go(`/workspace/${w.id}`)}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-ios-sm text-sm hover:surface-2 text-left">
+                  <WorkspaceIcon icon={w.icon} color={w.color} size={22} />
+                  <span className="truncate">{w.name}</span>
+                </button>
+              ))}
+            </>
+          )}
+          {results.boards.length > 0 && (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-2 px-2 pt-1.5 pb-0.5">Boards</p>
+              {results.boards.map(b => (
+                <button key={b.id} onClick={() => go(`/board/${b.id}`)}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-ios-sm text-sm hover:surface-2 text-left">
+                  <span className="text-base leading-none shrink-0">{isEmojiIcon(b.icon) ? b.icon : '📋'}</span>
+                  <span className="truncate">{b.name}</span>
+                </button>
+              ))}
+            </>
+          )}
+          {results.tasks.length > 0 && (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-2 px-2 pt-1.5 pb-0.5">Tareas</p>
+              {results.tasks.map(t => (
+                <button key={t.id} onClick={() => go(`/board/${t.board_id}?task=${t.id}`)}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-ios-sm text-sm hover:surface-2 text-left">
+                  <CircleDot size={13} className="text-2 shrink-0" />
+                  <span className="truncate">{t.title}</span>
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function navItemCls(isActive) {
   return `flex items-center gap-3 px-3 py-2 rounded-ios-sm text-sm font-medium transition-colors ${
@@ -57,7 +135,7 @@ function WorkspaceNavItem({ ws, collapsed }) {
         </NavLink>
         <button onClick={() => setOpen(o => !o)} aria-label="Mostrar boards"
           className="p-1.5 rounded-ios-sm text-2 hover:surface-2 shrink-0">
-          <ChevronRight size={14} className={`transition-transform ${open ? 'rotate-90' : ''}`} />
+          <ChevronDown size={15} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
         </button>
       </div>
       {open && <BoardSubList wsId={ws.id} />}
@@ -107,6 +185,7 @@ function Sidebar() {
 
       <div className="mt-4 px-2 flex-1 overflow-y-auto">
         {!collapsed && <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-2 mb-1.5">Workspaces</p>}
+        {!collapsed && <SidebarSearch workspaces={workspaces} />}
         <div className="flex flex-col gap-1">
           {workspaces.map(ws => (
             <WorkspaceNavItem key={ws.id} ws={ws} collapsed={collapsed} />

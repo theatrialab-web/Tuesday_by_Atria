@@ -17,7 +17,7 @@ export function AddTaskModal({ open, onClose, onCreated, initialDate = null }) {
     if (!open) return
     setTitle(''); setError(null)
     supabase.from('boards')
-      .select('id, name, icon, workspaces(name, color)')
+      .select('id, name, icon, color, workspaces(name, color)')
       .order('created_at', { ascending: true })
       .then(({ data }) => {
         setBoards(data || [])
@@ -87,7 +87,7 @@ export function AddTaskModal({ open, onClose, onCreated, initialDate = null }) {
               {boards.map(b => (
                 <button key={b.id} onClick={() => setBoardId(b.id)}
                   className={`flex items-center gap-2.5 px-3 py-2 rounded-ios-sm text-left ${boardId === b.id ? 'bg-brand-soft dark:bg-brand-softDark ring-1 ring-brand-light' : 'surface-2'}`}>
-                  <WorkspaceIcon icon={b.icon || '📋'} color={b.workspaces?.color || '#290880'} size={28} />
+                  <WorkspaceIcon icon={b.icon || '📋'} color={b.color || '#E4E4E9'} size={28} />
                   <span className="min-w-0">
                     <span className="text-sm font-medium block truncate">{b.name}</span>
                     <span className="text-[11px] text-2 block truncate">{b.workspaces?.name}</span>

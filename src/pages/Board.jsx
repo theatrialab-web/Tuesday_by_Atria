@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ChevronLeft, Table2, Kanban as KanbanIcon, CalendarDays, Trash2, CircleDot } from 'lucide-react'
 import { useBoard } from '../hooks/useBoard'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -17,6 +17,16 @@ export default function Board() {
   const board = useBoard(id)
   const [view, setView] = useState(() => localStorage.getItem(`view-${id}`) || 'table')
   const [openTask, setOpenTask] = useState(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    const tid = searchParams.get('task')
+    if (tid && board.tasks.some(t => t.id === tid)) {
+      setOpenTask({ id: tid })
+      searchParams.delete('task')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [searchParams, board.tasks])
   const [editingColumn, setEditingColumn] = useState(null)
   const [addingColumn, setAddingColumn] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
@@ -76,7 +86,7 @@ export default function Board() {
         </Link>
         <button onClick={() => setEditIcon(true)} aria-label="Cambiar icono del board"
           className="active:scale-95 transition-transform shrink-0">
-          <WorkspaceIcon icon={board.board.icon || '📋'} color={ws?.color || '#290880'} size={36} />
+          <WorkspaceIcon icon={board.board.icon || '📋'} color={board.board.color || '#E4E4E9'} size={36} />
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="text-lg font-semibold truncate leading-tight">{board.board.name}</h1>
@@ -148,7 +158,7 @@ export default function Board() {
       <ColumnOptionsEditor column={editingColumn} onClose={() => setEditingColumn(null)}
         updateColumn={board.updateColumn} deleteColumn={board.deleteColumn} />
       <IconPickerModal open={editIcon} onClose={() => setEditIcon(false)}
-        title="Icono del board" value={board.board.icon || '📋'} color={ws?.color || '#290880'}
+        title="Icono y color del board" value={board.board.icon || '📋'} color={board.board.color || '#E4E4E9'} withColor
         onSave={(patch) => board.updateBoardMeta(patch)} />
     </div>
   )

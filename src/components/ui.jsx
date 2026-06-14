@@ -119,12 +119,26 @@ export const ICON_MAP = {
   zap: Zap, globe: Globe, palette: Palette, 'shopping-bag': ShoppingBag,
 }
 
+// Devuelve negro o blanco según la luminancia del color de fondo.
+function readableFg(hex) {
+  if (!hex || hex === 'transparent') return 'var(--text-2)'
+  const m = hex.replace('#', '')
+  const full = m.length === 3 ? m.split('').map(c => c + c).join('') : m
+  const r = parseInt(full.slice(0, 2), 16)
+  const g = parseInt(full.slice(2, 4), 16)
+  const b = parseInt(full.slice(4, 6), 16)
+  if ([r, g, b].some(Number.isNaN)) return '#fff'
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return lum > 0.62 ? '#3A3A45' : '#fff'
+}
+
 export function isEmojiIcon(icon) {
   return !!icon && !ICON_MAP[icon]
 }
 
 export function WorkspaceIcon({ icon, color, size = 36 }) {
   const transparent = color === 'transparent'
+  const bg = transparent ? 'transparent' : (color || '#E4E4E9')
   const emoji = isEmojiIcon(icon)
   const I = ICON_MAP[icon] || Briefcase
   return (
@@ -132,8 +146,8 @@ export function WorkspaceIcon({ icon, color, size = 36 }) {
       style={{
         width: size, height: size,
         borderRadius: Math.round(size * 0.42),
-        backgroundColor: transparent ? 'transparent' : (color || '#290880'),
-        color: transparent ? 'var(--text-2)' : '#fff',
+        backgroundColor: bg,
+        color: readableFg(bg),
       }}>
       {emoji
         ? <span style={{ fontSize: size * 0.52, lineHeight: 1 }}>{icon}</span>

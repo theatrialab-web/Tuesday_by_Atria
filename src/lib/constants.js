@@ -1,6 +1,8 @@
+export const DEFAULT_ICON_COLOR = '#E4E4E9' // gris claro
+
 export const WORKSPACE_COLORS = [
-  '#290880', '#E2445C', '#00C875', '#FDAB3D',
-  '#0086C0', '#A25DDC', '#FF642E', '#66CCFF',
+  '#E4E4E9', '#290880', '#E2445C', '#00C875',
+  '#FDAB3D', '#0086C0', '#A25DDC', '#FF642E',
 ]
 
 export const WORKSPACE_ICONS = [
