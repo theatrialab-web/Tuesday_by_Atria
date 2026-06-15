@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Video, ExternalLink } from 'lucide-react'
 import { Modal, WorkspaceDropdown } from './ui'
-import { DateField } from './DatePicker'
+import { DateField, TimeField } from './DatePicker'
 
 const pad = (n) => String(n).padStart(2, '0')
 function todayStr() {
@@ -76,27 +76,32 @@ export function MeetingModal({ open, onClose, onCreate, onUpdate, meeting, works
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide text-2 block mb-1.5">Fecha</label>
             <DateField value={date} onChange={setDate} placeholder="Elegir" />
           </div>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide text-2 block mb-1.5">Hora</label>
-            <input type="time" value={time} onChange={e => setTime(e.target.value)}
-              className="text-sm rounded-ios-sm surface-2 px-3 py-2 outline-none w-full" />
+            <TimeField value={time} onChange={setTime} />
           </div>
         </div>
 
         <div>
           <label className="text-xs font-semibold uppercase tracking-wide text-2 block mb-1.5">Duración</label>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             {[15, 30, 45, 60, 90, 120].map(d => (
               <button key={d} type="button" onClick={() => setDuration(d)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold ${Number(duration) === d ? 'bg-brand text-white' : 'surface-2 text-2'}`}>
                 {d < 60 ? `${d} min` : d % 60 === 0 ? `${d / 60} h` : `${Math.floor(d / 60)} h ${d % 60} min`}
               </button>
             ))}
+            <span className="inline-flex items-center gap-1 surface-2 rounded-full pl-2.5 pr-1.5 py-0.5">
+              <input type="number" min="5" max="600" step="5" value={duration}
+                onChange={e => setDuration(e.target.value)}
+                className="w-12 bg-transparent text-xs font-semibold text-center outline-none" aria-label="Duración personalizada" />
+              <span className="text-[11px] text-2">min</span>
+            </span>
           </div>
         </div>
 

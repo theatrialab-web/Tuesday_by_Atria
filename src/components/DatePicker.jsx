@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CalendarDays, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, X, Clock } from 'lucide-react'
 import { buildMonthGrid, fromDateStr, monthLabel, toDateStr, WEEKDAYS } from '../lib/calendar'
 import { formatDate } from '../lib/constants'
 
@@ -51,7 +51,51 @@ function MiniCalendar({ value, onPick, onClear }) {
   )
 }
 
-// Campo de fecha: pill totalmente clicable que abre el popover.
+// Campo de hora: pill clicable + popover con horas y minutos (estilo de la app).
+export function TimeField({ value, onChange, className = '' }) {
+  const [open, setOpen] = useState(false)
+  const [h, m] = (value || '10:00').split(':')
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
+  const mins = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55']
+  const set = (nh, nm) => onChange(`${nh}:${nm}`)
+
+  return (
+    <>
+      <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(true) }}
+        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium surface-2 ${className}`}>
+        <Clock size={12} className="shrink-0 opacity-70" />
+        {value || '—'}
+      </button>
+      {open && createPortal(
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-black/30 anim-fade" onClick={() => setOpen(false)} />
+          <div className="relative surface rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop shadow-2xl w-full sm:w-[260px] pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold">Hora</span>
+              <button onClick={() => setOpen(false)} className="p-1.5 rounded-full surface-2 text-2"><X size={15} /></button>
+            </div>
+            <div className="flex gap-2 h-44">
+              <div className="flex-1 overflow-y-auto rounded-ios-sm surface-2 p-1">
+                {hours.map(hh => (
+                  <button key={hh} onClick={() => set(hh, m)}
+                    className={`w-full py-1.5 rounded-md text-sm font-medium ${h === hh ? 'bg-brand text-white' : 'hover:surface'}`}>{hh}</button>
+                ))}
+              </div>
+              <div className="flex-1 overflow-y-auto rounded-ios-sm surface-2 p-1">
+                {mins.map(mm => (
+                  <button key={mm} onClick={() => set(h, mm)}
+                    className={`w-full py-1.5 rounded-md text-sm font-medium ${m === mm ? 'bg-brand text-white' : 'hover:surface'}`}>{mm}</button>
+                ))}
+              </div>
+            </div>
+            <button onClick={() => setOpen(false)} className="w-full mt-3 py-2.5 rounded-ios-sm bg-brand text-white text-sm font-semibold">Listo</button>
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
+  )
+}
 export function DateField({ value, onChange, placeholder = '—', className = '' }) {
   const [open, setOpen] = useState(false)
   const pick = (dateStr) => { onChange(dateStr); setOpen(false) }

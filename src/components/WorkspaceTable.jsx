@@ -15,7 +15,7 @@ function StatusQuick({ row, onSetStatus }) {
   )
 }
 
-export function WorkspaceTable({ tasks, members, onSetStatus, onOpenBoard, selectedIds, onToggleSelect, onSelectAll }) {
+export function WorkspaceTable({ tasks, members, onSetStatus, onOpenTask, onOpenBoard, selectedIds, onToggleSelect, onSelectAll }) {
   const allSelected = tasks.length > 0 && tasks.every(t => selectedIds.includes(t.id))
   const byId = Object.fromEntries(members.map(m => [m.id, m]))
 
@@ -53,7 +53,7 @@ export function WorkspaceTable({ tasks, members, onSetStatus, onOpenBoard, selec
                     className="w-4 h-4 rounded accent-brand" aria-label="Seleccionar tarea" />
                 </td>
                 <td className="px-3 py-2">
-                  <button onClick={() => onOpenBoard(t.boardId)} className="font-medium text-left hover:text-brand dark:hover:text-brand-light">
+                  <button onClick={() => onOpenTask(t)} className="font-medium text-left hover:text-brand dark:hover:text-brand-light">
                     {t.title}
                   </button>
                 </td>

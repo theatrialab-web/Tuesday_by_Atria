@@ -375,16 +375,20 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
 
   const body = (
     <div className="flex flex-col gap-6">
-      {board?.id && linkToBoard && (
-        <button onClick={() => { onClose?.(); navigate(`/board/${board.id}`) }}
-          className="sm:hidden self-start -mb-2 inline-flex items-center gap-1 text-xs font-medium text-brand dark:text-brand-light">
-          <ExternalLink size={12} /> Ir al board «{board.name}»
-        </button>
-      )}
-      <input value={title}
-        onChange={e => setTitle(e.target.value)}
-        onBlur={() => title.trim() && title !== task.title && updateTask(task.id, { title: title.trim() })}
-        className="text-xl font-semibold bg-transparent w-full" aria-label="Título de la tarea" />
+      <div className="flex flex-col gap-1">
+        {board?.id && (linkToBoard ? (
+          <button onClick={() => { onClose?.(); navigate(`/board/${board.id}`) }}
+            className="self-start inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-brand dark:text-brand-light">
+            <ExternalLink size={11} /> {board.name}
+          </button>
+        ) : (
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-2">{board.name}</span>
+        ))}
+        <input value={title}
+          onChange={e => setTitle(e.target.value)}
+          onBlur={() => title.trim() && title !== task.title && updateTask(task.id, { title: title.trim() })}
+          className="text-xl font-semibold bg-transparent w-full" aria-label="Título de la tarea" placeholder="Título de la tarea" />
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
         {columns.map(c => (
@@ -413,7 +417,7 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
 
   // Móvil: hoja deslizante (Modal). Desktop: panel lateral derecho fijo.
   if (isMobile) {
-    return <Modal open={!!task} onClose={onClose} title={board?.name || 'Tarea'} wide>{body}</Modal>
+    return <Modal open={!!task} onClose={onClose} title="Tarea" wide>{body}</Modal>
   }
 
   const startResize = (e) => {
@@ -443,14 +447,7 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
         <div className="w-0.5 h-full mx-auto bg-transparent group-hover/resize:bg-brand-light transition-colors" />
       </div>
       <div className="flex items-center justify-between px-5 py-3 border-b hairline shrink-0">
-        {linkToBoard ? (
-          <button onClick={() => { if (board?.id) { onClose?.(); navigate(`/board/${board.id}`) } }}
-            className="text-sm font-medium text-2 truncate inline-flex items-center gap-1 hover:text-brand dark:hover:text-brand-light">
-            {board?.name || 'Tarea'} {board?.id && <ExternalLink size={12} className="shrink-0" />}
-          </button>
-        ) : (
-          <span className="text-sm font-medium text-2 truncate">{board?.name || 'Tarea'}</span>
-        )}
+        <span className="text-sm font-semibold text-2">Tarea</span>
         <button onClick={onClose} aria-label="Cerrar" className="p-1.5 rounded-full surface-2 text-2 hover:opacity-80">
           <PanelRightClose size={16} />
         </button>

@@ -13,6 +13,7 @@ import { BillingView } from '../components/BillingView'
 import { MeetingsView } from '../components/MeetingsView'
 import { WorkspaceTable } from '../components/WorkspaceTable'
 import { MonthCalendar } from '../components/MonthCalendar'
+import { TaskQuickView } from '../components/TaskQuickView'
 import { BulkBar } from '../components/BulkBar'
 
 export default function Workspace() {
@@ -34,6 +35,7 @@ export default function Workspace() {
   const [editWsIcon, setEditWsIcon] = useState(false)
   const [editBoard, setEditBoard] = useState(null)
   const [editingName, setEditingName] = useState(false)
+  const [quick, setQuick] = useState(null)
 
   useEffect(() => { localStorage.setItem(`ws-view-${id}`, view) }, [view, id])
   useEffect(() => { setSelBoards([]); setSelTasks([]) }, [view, id])
@@ -178,7 +180,9 @@ export default function Workspace() {
       {view === 'table' && (
         wsTasks.loading ? <p className="text-sm text-2">Cargando…</p> : (
           <WorkspaceTable tasks={wsTasks.tasks} members={wsTasks.members}
-            onSetStatus={wsTasks.setStatus} onOpenBoard={(bid) => navigate(`/board/${bid}`)}
+            onSetStatus={wsTasks.setStatus}
+            onOpenTask={(t) => setQuick({ taskId: t.id, boardId: t.boardId })}
+            onOpenBoard={(bid) => navigate(`/board/${bid}`)}
             selectedIds={selTasks} onToggleSelect={toggleTask} onSelectAll={setSelTasks} />
         )
       )}
@@ -186,7 +190,7 @@ export default function Workspace() {
       {view === 'calendar' && (
         wsTasks.loading ? <p className="text-sm text-2">Cargando…</p> : (
           <MonthCalendar eventsByDate={eventsByDate} isMobile={isMobile}
-            onEventClick={(ev) => ev.boardId && navigate(`/board/${ev.boardId}`)}
+            onEventClick={(ev) => ev.boardId && ev.key && setQuick({ taskId: ev.key, boardId: ev.boardId })}
             emptyHint={<p className="text-sm text-2 mt-4">No hay tareas con fecha en este workspace.</p>} />
         )
       )}
@@ -244,6 +248,11 @@ export default function Workspace() {
       <IconPickerModal open={!!editBoard} onClose={() => setEditBoard(null)}
         title="Icono y color del board" value={editBoard?.icon || '📋'} color={editBoard?.color || '#E4E4E9'} withColor
         onSave={(patch) => updateBoard(editBoard.id, patch)} />
+
+      {quick && (
+        <TaskQuickView taskId={quick.taskId} boardId={quick.boardId}
+          onClose={() => setQuick(null)} onChanged={wsTasks.refetch} />
+      )}
     </div>
   )
 }

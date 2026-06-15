@@ -58,7 +58,7 @@ export function BillingView({ workspaceId }) {
           <button onClick={() => setEditCycle({ period_month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01` })}
             className="px-4 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold">Configurar primer cobro</button>
         </div>
-        <CycleEditorModal cycle={editCycle} onClose={() => setEditCycle(null)} createCycle={createCycle} updateCycle={updateCycle} />
+        <CycleEditorModal cycle={editCycle} onClose={() => setEditCycle(null)} createCycle={createCycle} updateCycle={updateCycle} deleteCycle={deleteCycle} />
       </div>
     )
   }
@@ -181,7 +181,7 @@ export function BillingView({ workspaceId }) {
         </div>
       )}
 
-      <CycleEditorModal cycle={editCycle} onClose={() => setEditCycle(null)} createCycle={createCycle} updateCycle={updateCycle} />
+      <CycleEditorModal cycle={editCycle} onClose={() => setEditCycle(null)} createCycle={createCycle} updateCycle={updateCycle} deleteCycle={deleteCycle} />
       <AddPaymentModal cycle={payCycle} onClose={() => setPayCycle(null)} addPayment={addPayment} />
     </div>
   )
@@ -196,7 +196,7 @@ function Stat({ label, value, accent }) {
   )
 }
 
-function CycleEditorModal({ cycle, onClose, createCycle, updateCycle }) {
+function CycleEditorModal({ cycle, onClose, createCycle, updateCycle, deleteCycle }) {
   const isNew = cycle && !cycle.id
   const [monthVal, setMonthVal] = useState('')
   const [total, setTotal] = useState('')
@@ -261,6 +261,12 @@ function CycleEditorModal({ cycle, onClose, createCycle, updateCycle }) {
           className="w-full py-3 rounded-ios-sm bg-brand text-white font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
           {busy ? 'Guardando…' : (isNew ? 'Crear mes' : 'Guardar')}
         </button>
+        {!isNew && deleteCycle && (
+          <button onClick={() => { if (window.confirm('¿Eliminar este cobro y todos sus abonos? Útil si este cliente ya no lo necesita.')) { deleteCycle(cycle.id); onClose() } }}
+            className="w-full flex items-center justify-center gap-1.5 text-sm text-[#E2445C] font-medium py-1">
+            <Trash2 size={14} /> Eliminar este cobro
+          </button>
+        )}
       </div>
     </Modal>
   )
