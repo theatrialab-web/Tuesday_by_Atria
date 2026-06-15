@@ -84,10 +84,12 @@ function Comments({ task, boardId, members }) {
   const [comments, setComments] = useState([])
   const [draft, setDraft] = useState('')
   const [mentionQuery, setMentionQuery] = useState(null)
+  const [editMentionQuery, setEditMentionQuery] = useState(null)
   const [editingId, setEditingId] = useState(null)
   const [editDraft, setEditDraft] = useState('')
   const inputRef = useRef(null)
   const editRef = useRef(null)
+  const memberNames = members.map(m => m.full_name || m.email)
 
   const fetchComments = async () => {
     const { data } = await supabase
@@ -123,6 +125,20 @@ function Comments({ task, boardId, members }) {
     inputRef.current?.focus()
   }
 
+  const onEditDraftChange = (e) => {
+    const text = e.target.value
+    setEditDraft(text)
+    const m = text.slice(0, e.target.selectionStart).match(/@([\wáéíóúñ]*)$/i)
+    setEditMentionQuery(m ? m[1].toLowerCase() : null)
+  }
+
+  const insertMentionEdit = (member) => {
+    const name = member.full_name || member.email
+    setEditDraft(d => d.replace(/@[\wáéíóúñ]*$/i, `@${name} `))
+    setEditMentionQuery(null)
+    editRef.current?.focus()
+  }
+
   const mentionsIn = (content) =>
     members.filter(m => content.includes(`@${m.full_name || m.email}`)).map(m => m.id)
 
@@ -137,7 +153,7 @@ function Comments({ task, boardId, members }) {
     if (!error) fetchComments()
   }
 
-  const startEdit = (c) => { setEditingId(c.id); setEditDraft(c.content) }
+  const startEdit = (c) => { setEditingId(c.id); setEditDraft(c.content); setEditMentionQuery(null) }
 
   const saveEdit = async (c) => {
     const content = editDraft.trim()
@@ -167,6 +183,9 @@ function Comments({ task, boardId, members }) {
   const suggestions = mentionQuery !== null
     ? members.filter(m => (m.full_name || m.email || '').toLowerCase().includes(mentionQuery)).slice(0, 5)
     : []
+  const editSuggestions = editMentionQuery !== null
+    ? members.filter(m => (m.full_name || m.email || '').toLowerCase().includes(editMentionQuery)).slice(0, 5)
+    : []
 
   return (
     <section>
@@ -183,11 +202,24 @@ function Comments({ task, boardId, members }) {
               </p>
               {editingId === c.id ? (
                 <div className="mt-1">
-                  <div className="surface-2 rounded-ios-sm px-3 py-2">
-                    <FormatToolbar targetRef={editRef} onApply={applyToEdit} />
-                    <textarea ref={editRef} value={editDraft} rows={2}
-                      onChange={e => setEditDraft(e.target.value)}
-                      className="w-full bg-transparent text-sm resize-none mt-1.5" />
+                  <div className="relative">
+                    {editSuggestions.length > 0 && (
+                      <div className="absolute bottom-full mb-1 left-0 surface border hairline rounded-ios-sm shadow-lg overflow-hidden z-10 w-56">
+                        {editSuggestions.map(m => (
+                          <button key={m.id} onClick={() => insertMentionEdit(m)}
+                            className="w-full flex items-center gap-2 px-3 py-2 hover:surface-2 text-left">
+                            <Avatar profile={m} size={22} />
+                            <span className="text-sm truncate">{m.full_name || m.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div className="surface-2 rounded-ios-sm px-3 py-2">
+                      <FormatToolbar targetRef={editRef} onApply={applyToEdit} />
+                      <textarea ref={editRef} value={editDraft} rows={2}
+                        onChange={onEditDraftChange}
+                        className="w-full bg-transparent text-sm resize-none mt-1.5" />
+                    </div>
                   </div>
                   <div className="flex gap-2 mt-1.5">
                     <button onClick={() => saveEdit(c)} className="text-xs font-semibold px-3 py-1.5 rounded-ios-sm bg-brand text-white">Guardar</button>
@@ -197,7 +229,7 @@ function Comments({ task, boardId, members }) {
               ) : (
                 <div className="flex items-start gap-2">
                   <p className="text-sm break-words flex-1"
-                    dangerouslySetInnerHTML={{ __html: renderRich(c.content) }} />
+                    dangerouslySetInnerHTML={{ __html: renderRich(c.content, memberNames) }} />
                   {c.user_id === user.id && (
                     <span className="flex gap-1 sm:opacity-0 group-hover:opacity-100 shrink-0">
                       <button onClick={() => startEdit(c)} aria-label="Editar" className="text-2 hover:text-brand dark:hover:text-brand-light"><Pencil size={13} /></button>
@@ -327,7 +359,7 @@ function Files({ task, boardId }) {
   )
 }
 
-export function TaskDetail({ task, board, columns, values, members, subtasksOf, createTask, updateTask, deleteTask, setValue, onClose, onEditColumn, isMobile = false, width = 460, onResize }) {
+export function TaskDetail({ task, board, columns, values, members, subtasksOf, createTask, updateTask, deleteTask, setValue, onClose, onEditColumn, isMobile = false, width = 460, onResize, linkToBoard = true }) {
   const navigate = useNavigate()
   const [title, setTitle] = useState(task?.title || '')
   useEffect(() => { setTitle(task?.title || '') }, [task?.id])
@@ -343,7 +375,7 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
 
   const body = (
     <div className="flex flex-col gap-6">
-      {board?.id && (
+      {board?.id && linkToBoard && (
         <button onClick={() => { onClose?.(); navigate(`/board/${board.id}`) }}
           className="sm:hidden self-start -mb-2 inline-flex items-center gap-1 text-xs font-medium text-brand dark:text-brand-light">
           <ExternalLink size={12} /> Ir al board «{board.name}»
@@ -356,11 +388,13 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
         {columns.map(c => (
-          <div key={c.id} className="flex items-center justify-between gap-3 py-1.5 border-b hairline">
-            <span className="text-sm text-2">{c.name}</span>
-            <CellValue column={c} value={values[task.id]?.[c.id] ?? null}
-              members={members} onEditColumn={onEditColumn}
-              onChange={(v) => setValue(task.id, c.id, v)} />
+          <div key={c.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-1.5 border-b hairline">
+            <span className="text-sm text-2 shrink-0">{c.name}</span>
+            <div className="min-w-0 max-w-full flex justify-end">
+              <CellValue column={c} value={values[task.id]?.[c.id] ?? null}
+                members={members} onEditColumn={onEditColumn}
+                onChange={(v) => setValue(task.id, c.id, v)} />
+            </div>
           </div>
         ))}
       </div>
@@ -409,10 +443,14 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
         <div className="w-0.5 h-full mx-auto bg-transparent group-hover/resize:bg-brand-light transition-colors" />
       </div>
       <div className="flex items-center justify-between px-5 py-3 border-b hairline shrink-0">
-        <button onClick={() => { if (board?.id) { onClose?.(); navigate(`/board/${board.id}`) } }}
-          className="text-sm font-medium text-2 truncate inline-flex items-center gap-1 hover:text-brand dark:hover:text-brand-light">
-          {board?.name || 'Tarea'} {board?.id && <ExternalLink size={12} className="shrink-0" />}
-        </button>
+        {linkToBoard ? (
+          <button onClick={() => { if (board?.id) { onClose?.(); navigate(`/board/${board.id}`) } }}
+            className="text-sm font-medium text-2 truncate inline-flex items-center gap-1 hover:text-brand dark:hover:text-brand-light">
+            {board?.name || 'Tarea'} {board?.id && <ExternalLink size={12} className="shrink-0" />}
+          </button>
+        ) : (
+          <span className="text-sm font-medium text-2 truncate">{board?.name || 'Tarea'}</span>
+        )}
         <button onClick={onClose} aria-label="Cerrar" className="p-1.5 rounded-full surface-2 text-2 hover:opacity-80">
           <PanelRightClose size={16} />
         </button>

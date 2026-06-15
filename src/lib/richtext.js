@@ -8,12 +8,24 @@ function escapeHtml(s) {
     .replace(/>/g, '&gt;')
 }
 
-export function renderRich(text) {
+export function renderRich(text, mentionNames = []) {
   let s = escapeHtml(text)
   s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
   s = s.replace(/~~([^~\n]+)~~/g, '<del>$1</del>')
   // cursiva con _ , evitando partir palabras con guion bajo interno
   s = s.replace(/(^|[\s(])_([^_\n]+)_(?=$|[\s.,!?)])/g, '$1<em>$2</em>')
+  // Menciones: @Nombre -> chip con el nombre, sin la arroba
+  if (mentionNames.length) {
+    const needles = mentionNames
+      .map(n => escapeHtml(n))
+      .filter(Boolean)
+      .sort((a, b) => b.length - a.length)
+      .map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    if (needles.length) {
+      const re = new RegExp('@(' + needles.join('|') + ')', 'g')
+      s = s.replace(re, '<span class="mention">$1</span>')
+    }
+  }
   s = s.replace(/\n/g, '<br/>')
   return s
 }

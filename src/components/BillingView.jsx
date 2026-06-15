@@ -29,6 +29,7 @@ export function BillingView({ workspaceId }) {
   const { cycles, paymentsByCycle, current, loading, createCycle, updateCycle, setPaid, deleteCycle, addPayment, deletePayment } = useBilling(workspaceId)
   const [editCycle, setEditCycle] = useState(null)   // ciclo a editar (o {nuevo})
   const [payCycle, setPayCycle] = useState(null)      // ciclo al que abonar
+  const [expanded, setExpanded] = useState(null)      // mes del historial desplegado
   const isMobile = useIsMobile()
 
   const cur = current?.currency || 'EUR'
@@ -138,16 +139,41 @@ export function BillingView({ workspaceId }) {
           <h3 className="text-sm font-semibold mb-2">Historial</h3>
           <div className="surface rounded-ios border hairline overflow-hidden">
             {cycles.slice(1).map(c => {
-              const ct = cycleTotals(c, paymentsByCycle[c.id] || [])
+              const cps = paymentsByCycle[c.id] || []
+              const ct = cycleTotals(c, cps)
+              const isOpen = expanded === c.id
               return (
-                <div key={c.id} className="flex items-center gap-3 px-4 py-3 border-b hairline last:border-0">
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${c.status === 'paid' ? 'bg-[#00C875]' : 'bg-[#FDAB3D]'}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium capitalize">{periodLabel(c.period_month)}</p>
-                    <p className="text-[11px] text-2">{money(ct.paid, c.currency)} / {money(ct.total, c.currency)} · {c.status === 'paid' ? 'Pagado' : 'Pendiente'}</p>
+                <div key={c.id} className="border-b hairline last:border-0">
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <button onClick={() => setExpanded(isOpen ? null : c.id)} aria-label="Ver abonos"
+                      className="text-2 shrink-0">
+                      <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${c.status === 'paid' ? 'bg-[#00C875]' : 'bg-[#FDAB3D]'}`} />
+                    <button onClick={() => setExpanded(isOpen ? null : c.id)} className="flex-1 min-w-0 text-left">
+                      <p className="text-sm font-medium capitalize">{periodLabel(c.period_month)}</p>
+                      <p className="text-[11px] text-2">{money(ct.paid, c.currency)} / {money(ct.total, c.currency)} · {c.status === 'paid' ? 'Pagado' : 'Pendiente'}</p>
+                    </button>
+                    <button onClick={() => setPayCycle(c)} className="text-xs font-medium text-brand dark:text-brand-light px-2 py-1">Abonar</button>
+                    <button onClick={() => { if (window.confirm('¿Eliminar este mes y sus abonos?')) deleteCycle(c.id) }} aria-label="Eliminar mes" className="p-1.5 rounded-ios-sm text-2 hover:text-[#E2445C]"><Trash2 size={14} /></button>
                   </div>
-                  <button onClick={() => setPayCycle(c)} className="text-xs font-medium text-brand dark:text-brand-light px-2 py-1">Abonar</button>
-                  <button onClick={() => { if (window.confirm('¿Eliminar este mes y sus abonos?')) deleteCycle(c.id) }} aria-label="Eliminar mes" className="p-1.5 rounded-ios-sm text-2 hover:text-[#E2445C]"><Trash2 size={14} /></button>
+                  {isOpen && (
+                    <div className="px-4 pb-3 pl-12">
+                      {cps.length === 0 ? (
+                        <p className="text-[11px] text-2 py-1">Sin abonos este mes.</p>
+                      ) : cps.map(p => (
+                        <div key={p.id} className="flex items-center gap-2 py-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#00C875] shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium">{money(p.amount, c.currency)}</p>
+                            <p className="text-[10px] text-2">{fromDateStr(p.paid_on).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}{p.note ? ` · ${p.note}` : ''}</p>
+                          </div>
+                          <button onClick={() => deletePayment(p.id)} aria-label="Eliminar abono"
+                            className="p-1 rounded-ios-sm text-2 hover:text-[#E2445C]"><Trash2 size={13} /></button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )
             })}

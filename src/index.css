@@ -46,6 +46,16 @@ h1, h2, h3, h4 {
 .logo-invert-dark { transition: filter .2s ease; }
 .dark .logo-invert-dark { filter: brightness(0) invert(1); }
 
+/* Chip de mención en comentarios */
+.mention {
+  color: #290880;
+  font-weight: 600;
+  background: rgba(67, 24, 201, 0.12);
+  border-radius: 6px;
+  padding: 0 4px;
+}
+.dark .mention { color: #C7B8FF; background: rgba(124, 79, 247, 0.22); }
+
 /* Slider de tono del selector de color */
 .hue-slider {
   background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);

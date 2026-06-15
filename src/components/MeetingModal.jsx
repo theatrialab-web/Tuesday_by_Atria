@@ -90,10 +90,14 @@ export function MeetingModal({ open, onClose, onCreate, onUpdate, meeting, works
 
         <div>
           <label className="text-xs font-semibold uppercase tracking-wide text-2 block mb-1.5">Duración</label>
-          <select value={duration} onChange={e => setDuration(e.target.value)}
-            className="text-sm rounded-ios-sm surface-2 px-3 py-2 outline-none w-full">
-            {[15, 30, 45, 60, 90, 120].map(d => <option key={d} value={d}>{d} min</option>)}
-          </select>
+          <div className="flex flex-wrap gap-1.5">
+            {[15, 30, 45, 60, 90, 120].map(d => (
+              <button key={d} type="button" onClick={() => setDuration(d)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold ${Number(duration) === d ? 'bg-brand text-white' : 'surface-2 text-2'}`}>
+                {d < 60 ? `${d} min` : d % 60 === 0 ? `${d / 60} h` : `${Math.floor(d / 60)} h ${d % 60} min`}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>
