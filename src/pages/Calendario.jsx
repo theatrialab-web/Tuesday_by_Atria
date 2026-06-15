@@ -11,12 +11,13 @@ export default function Calendario() {
   const isMobile = useIsMobile()
   const [addDate, setAddDate] = useState(null)
   const [quick, setQuick] = useState(null)
+  const [scope, setScope] = useState('all') // 'all' | 'mine'
 
   // Adaptar al formato de MonthCalendar (tareas por workspace + reuniones)
   const eventsByDate = useMemo(() => {
     const map = {}
     for (const [date, evs] of Object.entries(raw)) {
-      map[date] = evs.map((ev, i) => ev.type === 'meeting' ? {
+      const list = (scope === 'mine' ? evs.filter(e => e.mine) : evs).map((ev, i) => ev.type === 'meeting' ? {
         key: `m-${ev.meetingId}-${i}`,
         title: ev.title,
         color: ev.color,
@@ -31,9 +32,10 @@ export default function Calendario() {
         boardId: ev.boardId,
         taskId: ev.taskId,
       })
+      if (list.length) map[date] = list
     }
     return map
-  }, [raw])
+  }, [raw, scope])
 
   const onEventClick = (ev) => {
     if (ev.type === 'meeting') {
@@ -52,9 +54,17 @@ export default function Calendario() {
 
   return (
     <div className="p-5 sm:p-8 max-w-6xl mx-auto">
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold leading-tight">Calendario</h1>
-        <p className="text-sm text-2">Tus tareas con fecha y tus reuniones</p>
+      <div className="flex items-end justify-between gap-3 mb-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-semibold leading-tight">Calendario</h1>
+          <p className="text-sm text-2">Tus tareas con fecha y tus reuniones</p>
+        </div>
+        <div className="flex surface-2 rounded-full p-1 gap-0.5">
+          <button onClick={() => setScope('all')}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold ${scope === 'all' ? 'bg-brand text-white' : 'text-2'}`}>Todo</button>
+          <button onClick={() => setScope('mine')}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold ${scope === 'mine' ? 'bg-brand text-white' : 'text-2'}`}>Solo lo mío</button>
+        </div>
       </div>
       {loading ? (
         <p className="text-sm text-2">Cargando…</p>

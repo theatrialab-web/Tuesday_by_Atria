@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Plus } from 'lucide-react'
 import { Modal, Avatar, WorkspaceIcon } from './ui'
 import { WORKSPACE_COLORS, DEFAULT_ICON_COLOR } from '../lib/constants'
 import { IconEmojiGrid, ColorRow } from './IconEmojiPicker'
-import { useWorkspaces } from '../hooks/useWorkspaces'
+import { useWorkspaces, useKnownContacts } from '../hooks/useWorkspaces'
 import { useAuth } from '../contexts/AuthContext'
 
 export function CreateWorkspaceModal({ open, onClose, onCreated }) {
@@ -99,15 +99,26 @@ export function CreateBoardModal({ open, onClose, onCreate }) {
 
 export function MembersModal({ open, onClose, members, inviteByEmail, removeMember }) {
   const { user } = useAuth()
+  const contacts = useKnownContacts()
   const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null)
 
-  const invite = async () => {
-    if (!email.trim() || busy) return
+  const memberIds = new Set(members.map(m => m.id))
+  const q = email.trim().toLowerCase()
+  const suggestions = q.length >= 3
+    ? contacts.filter(c =>
+        !memberIds.has(c.id) && c.id !== user?.id &&
+        ((c.email || '').toLowerCase().includes(q) || (c.full_name || '').toLowerCase().includes(q)))
+      .slice(0, 5)
+    : []
+
+  const doInvite = async (value) => {
+    const target = (value ?? email).trim()
+    if (!target || busy) return
     setBusy(true); setMsg(null)
     try {
-      const p = await inviteByEmail(email)
+      const p = await inviteByEmail(target)
       setMsg({ ok: true, text: `${p.full_name || p.email} agregado al workspace.` })
       setEmail('')
     } catch (e) {
@@ -120,15 +131,33 @@ export function MembersModal({ open, onClose, members, inviteByEmail, removeMemb
   return (
     <Modal open={open} onClose={onClose} title="Miembros">
       <div className="flex flex-col gap-3">
-        <div className="flex gap-2">
-          <input value={email} onChange={e => setEmail(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && invite()}
-            type="email" placeholder="email@ejemplo.com"
-            className="flex-1 px-3 py-2.5 rounded-ios-sm surface-2 text-sm placeholder:text-2" />
-          <button onClick={invite} disabled={!email.trim() || busy}
-            className="px-4 rounded-ios-sm bg-brand text-white text-sm font-semibold disabled:opacity-40">
-            Invitar
-          </button>
+        <div>
+          <div className="flex gap-2">
+            <input value={email} onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && doInvite()}
+              type="email" placeholder="email@ejemplo.com" autoComplete="off"
+              className="flex-1 px-3 py-2.5 rounded-ios-sm surface-2 text-sm placeholder:text-2" />
+            <button onClick={() => doInvite()} disabled={!email.trim() || busy}
+              className="px-4 rounded-ios-sm bg-brand text-white text-sm font-semibold disabled:opacity-40">
+              Invitar
+            </button>
+          </div>
+          {suggestions.length > 0 && (
+            <div className="mt-1.5 surface border hairline rounded-ios-sm overflow-hidden">
+              <p className="text-[10px] uppercase tracking-wide text-2 px-3 pt-2 pb-1">Ya en tus otros workspaces</p>
+              {suggestions.map(c => (
+                <button key={c.id} onClick={() => doInvite(c.email)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:surface-2">
+                  <Avatar profile={c} size={28} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{c.full_name || c.email}</p>
+                    {c.full_name && <p className="text-[11px] text-2 truncate">{c.email}</p>}
+                  </div>
+                  <Plus size={15} className="text-brand dark:text-brand-light shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         {msg && <p className={`text-xs ${msg.ok ? 'text-[#00C875]' : 'text-[#E2445C]'}`}>{msg.text}</p>}
         <p className="text-[11px] text-2">

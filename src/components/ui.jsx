@@ -121,24 +121,34 @@ export function OptionSheet({ open, onClose, title, options, value, onSelect, al
 }
 
 // Dropdown de cliente (mismo patrón que OptionSheet/DateField).
-export function WorkspaceDropdown({ workspaces, value, onChange, placeholder = 'Elegir cliente' }) {
+export function WorkspaceDropdown({ workspaces, value, onChange, placeholder = 'Elegir cliente', allowAll = false, title = 'Cliente' }) {
   const [open, setOpen] = useState(false)
   const sel = workspaces.find(w => w.id === value)
+  const isAll = allowAll && (value === 'all' || !value)
   return (
     <>
       <button type="button" onClick={() => setOpen(true)}
         className="w-full flex items-center gap-2.5 surface-2 rounded-ios-sm px-3 py-2.5 text-left">
         {sel ? <WorkspaceIcon icon={sel.icon} color={sel.color} size={24} />
           : <span className="w-6 h-6 rounded-md surface grid place-items-center text-2 shrink-0"><Briefcase size={14} /></span>}
-        <span className={`flex-1 min-w-0 truncate text-sm font-medium ${sel ? '' : 'text-2'}`}>{sel ? sel.name : placeholder}</span>
+        <span className={`flex-1 min-w-0 truncate text-sm font-medium ${sel ? '' : 'text-2'}`}>
+          {sel ? sel.name : isAll ? 'Todos los clientes' : placeholder}
+        </span>
         <ChevronDown size={16} className="text-2 shrink-0" />
       </button>
       {open && createPortal(
         <div className="fixed inset-0 z-[85] flex items-end sm:items-center justify-center" onClick={e => e.stopPropagation()}>
           <div className="absolute inset-0 bg-black/30 anim-fade" onClick={() => setOpen(false)} />
           <div className="relative surface w-full sm:w-80 rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <p className="text-sm font-semibold mb-3">Cliente</p>
+            <p className="text-sm font-semibold mb-3">{title}</p>
             <div className="flex flex-col gap-1.5">
+              {allowAll && (
+                <button onClick={() => { onChange('all'); setOpen(false) }}
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-ios-sm text-left ${isAll ? 'bg-brand-soft dark:bg-brand-softDark ring-1 ring-brand-light' : 'surface-2'}`}>
+                  <span className="w-[26px] h-[26px] rounded-md surface grid place-items-center text-2 shrink-0"><Briefcase size={14} /></span>
+                  <span className="text-sm font-medium">Todos los clientes</span>
+                </button>
+              )}
               {workspaces.map(w => (
                 <button key={w.id} onClick={() => { onChange(w.id); setOpen(false) }}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-ios-sm text-left ${value === w.id ? 'bg-brand-soft dark:bg-brand-softDark ring-1 ring-brand-light' : 'surface-2'}`}>

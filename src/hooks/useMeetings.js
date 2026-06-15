@@ -63,11 +63,17 @@ export function useAllMeetings() {
     return data
   }
 
+  const updateMeeting = async (id, patch) => {
+    const { error } = await supabase.from('meetings').update(patch).eq('id', id)
+    if (error) throw error
+    await fetchAll()
+  }
+
   const deleteMeeting = async (id) => {
     setMeetings(ms => ms.filter(m => m.id !== id))
     const { error } = await supabase.from('meetings').delete().eq('id', id)
     if (error) { fetchAll(); throw error }
   }
 
-  return { meetings, loading, createMeeting, deleteMeeting, refetch: fetchAll }
+  return { meetings, loading, createMeeting, updateMeeting, deleteMeeting, refetch: fetchAll }
 }

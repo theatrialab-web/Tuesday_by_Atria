@@ -3,12 +3,13 @@ import { Video, Plus, CalendarClock } from 'lucide-react'
 import { useAllMeetings } from '../hooks/useMeetings'
 import { useWorkspaces } from '../hooks/useWorkspaces'
 import { MeetingModal } from '../components/MeetingModal'
+import { WorkspaceDropdown } from '../components/ui'
 import { MeetingRow } from '../components/MeetingsView'
 
 export default function Reuniones() {
-  const { meetings, loading, createMeeting, deleteMeeting } = useAllMeetings()
+  const { meetings, loading, createMeeting, updateMeeting, deleteMeeting } = useAllMeetings()
   const { workspaces } = useWorkspaces()
-  const [open, setOpen] = useState(false)
+  const [modal, setModal] = useState(null) // null | { meeting }
   const [wsFilter, setWsFilter] = useState('all')
 
   const filtered = useMemo(
@@ -30,18 +31,16 @@ export default function Reuniones() {
             <p className="text-sm text-2">Videollamadas de todos tus clientes</p>
           </div>
         </div>
-        <button onClick={() => setOpen(true)}
+        <button onClick={() => setModal({ meeting: null })}
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold shrink-0 active:scale-95 transition-transform">
           <Plus size={15} /> Agendar
         </button>
       </div>
 
       {!loading && meetings.length > 0 && (
-        <select value={wsFilter} onChange={e => setWsFilter(e.target.value)}
-          className="text-sm rounded-ios-sm surface-2 px-3 py-2 outline-none mb-5 max-w-full">
-          <option value="all">Todos los clientes</option>
-          {workspaces.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-        </select>
+        <div className="w-full sm:w-64 mb-5">
+          <WorkspaceDropdown workspaces={workspaces} value={wsFilter} onChange={setWsFilter} allowAll title="Filtrar por cliente" />
+        </div>
       )}
 
       {loading ? (
@@ -59,7 +58,7 @@ export default function Reuniones() {
             <section>
               <h2 className="text-sm font-semibold mb-2">Próximas ({upcoming.length})</h2>
               <div className="surface rounded-ios border hairline overflow-hidden">
-                {upcoming.map(m => <MeetingRow key={m.id} m={m} ws={m.workspaces} onDelete={deleteMeeting} />)}
+                {upcoming.map(m => <MeetingRow key={m.id} m={m} ws={m.workspaces} onEdit={() => setModal({ meeting: m })} onDelete={deleteMeeting} />)}
               </div>
             </section>
           )}
@@ -67,14 +66,14 @@ export default function Reuniones() {
             <section>
               <h2 className="text-sm font-semibold mb-2 text-2">Pasadas ({past.length})</h2>
               <div className="surface rounded-ios border hairline overflow-hidden">
-                {past.map(m => <MeetingRow key={m.id} m={m} ws={m.workspaces} onDelete={deleteMeeting} />)}
+                {past.map(m => <MeetingRow key={m.id} m={m} ws={m.workspaces} onEdit={() => setModal({ meeting: m })} onDelete={deleteMeeting} />)}
               </div>
             </section>
           )}
         </div>
       )}
 
-      <MeetingModal open={open} onClose={() => setOpen(false)} onCreate={createMeeting} workspaces={workspaces} />
+      <MeetingModal open={!!modal} onClose={() => setModal(null)} meeting={modal?.meeting} onCreate={createMeeting} onUpdate={updateMeeting} workspaces={workspaces} />
     </div>
   )
 }

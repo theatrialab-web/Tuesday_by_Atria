@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CreditCard, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useAllBilling } from '../hooks/useBilling'
-import { WorkspaceIcon } from '../components/ui'
+import { WorkspaceIcon, WorkspaceDropdown } from '../components/ui'
 import { money } from '../components/BillingView'
 import { fromDateStr } from '../lib/calendar'
 
@@ -30,11 +30,13 @@ export default function Cobros() {
     return { ...c, total, paid, remaining: Math.max(0, total - paid), dleft: daysLeft(c.due_date) }
   }), [cycles, paidByCycle])
 
-  // Lista de clientes presentes en los cobros (para el filtro)
+  // Clientes presentes en los cobros (para el filtro)
   const wsOptions = useMemo(() => {
     const map = new Map()
-    for (const r of allRows) if (!map.has(r.workspace_id)) map.set(r.workspace_id, r.workspaces?.name || 'Cliente')
-    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1]))
+    for (const r of allRows) if (!map.has(r.workspace_id)) {
+      map.set(r.workspace_id, { id: r.workspace_id, name: r.workspaces?.name || 'Cliente', color: r.workspaces?.color, icon: r.workspaces?.icon })
+    }
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name))
   }, [allRows])
 
   const rows = useMemo(() => allRows.filter(r => {
@@ -97,11 +99,9 @@ export default function Cobros() {
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2 mb-5">
-            <select value={wsFilter} onChange={e => setWsFilter(e.target.value)}
-              className="text-sm rounded-ios-sm surface-2 px-3 py-2 outline-none max-w-[60%]">
-              <option value="all">Todos los clientes</option>
-              {wsOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-            </select>
+            <div className="w-full sm:w-64">
+              <WorkspaceDropdown workspaces={wsOptions} value={wsFilter} onChange={setWsFilter} allowAll title="Filtrar por cliente" />
+            </div>
             <div className="flex surface-2 rounded-full p-1 gap-0.5">
               {[['all', 'Todos'], ['pending', 'Pendientes'], ['paid', 'Pagados']].map(([k, label]) => (
                 <button key={k} onClick={() => setStatusFilter(k)}

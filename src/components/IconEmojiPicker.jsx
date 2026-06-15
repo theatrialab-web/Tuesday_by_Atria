@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { WORKSPACE_ICONS, WORKSPACE_COLORS } from '../lib/constants'
 import { Modal, WorkspaceIcon } from './ui'
-import { EMOJIS } from './EmojiPicker'
+import { EmojiGrid } from './EmojiPicker'
 import { CustomColorPicker } from './ColorPicker'
 
 // Fila de colores: predefinidos + selector de color personalizado (hex).
@@ -36,7 +36,7 @@ export function IconEmojiGrid({ value, onPick }) {
         {tabBtn('emoji', 'Emojis')}
       </div>
       {tab === 'icon' ? (
-        <div className="grid grid-cols-8 gap-2">
+        <div className="grid grid-cols-8 gap-2 max-h-56 overflow-y-auto">
           {WORKSPACE_ICONS.map(i => (
             <button key={i} type="button" onClick={() => onPick(i)} aria-label={`Icono ${i}`}
               className={`h-9 rounded-ios-sm flex items-center justify-center surface-2 ${value === i ? 'ring-2 ring-brand-light' : ''}`}>
@@ -45,13 +45,8 @@ export function IconEmojiGrid({ value, onPick }) {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-8 gap-1.5 max-h-40 overflow-y-auto">
-          {EMOJIS.map(e => (
-            <button key={e} type="button" onClick={() => onPick(e)}
-              className={`h-9 rounded-ios-sm flex items-center justify-center text-xl surface-2 ${value === e ? 'ring-2 ring-brand-light' : ''}`}>
-              {e}
-            </button>
-          ))}
+        <div className="max-h-56 overflow-y-auto">
+          <EmojiGrid cols={8} onPick={onPick} />
         </div>
       )}
     </div>

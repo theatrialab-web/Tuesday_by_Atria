@@ -3,12 +3,14 @@ import { Video, ExternalLink } from 'lucide-react'
 import { Modal, WorkspaceDropdown } from './ui'
 import { DateField } from './DatePicker'
 
+const pad = (n) => String(n).padStart(2, '0')
 function todayStr() {
   const t = new Date()
-  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+  return `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`
 }
 
-export function MeetingModal({ open, onClose, onCreate, workspaces }) {
+export function MeetingModal({ open, onClose, onCreate, onUpdate, meeting, workspaces }) {
+  const isEdit = !!meeting?.id
   const [wsId, setWsId] = useState('')
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(null)
@@ -20,11 +22,22 @@ export function MeetingModal({ open, onClose, onCreate, workspaces }) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (open) {
-      setTitle(''); setDate(todayStr()); setTime('10:00'); setDuration(30); setLink(''); setNotes(''); setError(null)
+    if (!open) return
+    setError(null)
+    if (isEdit) {
+      const dt = new Date(meeting.starts_at)
+      setTitle(meeting.title || '')
+      setDate(`${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`)
+      setTime(`${pad(dt.getHours())}:${pad(dt.getMinutes())}`)
+      setDuration(meeting.duration_min || 30)
+      setLink(meeting.link || '')
+      setNotes(meeting.notes || '')
+      if (workspaces) setWsId(meeting.workspace_id)
+    } else {
+      setTitle(''); setDate(todayStr()); setTime('10:00'); setDuration(30); setLink(''); setNotes('')
       if (workspaces?.length) setWsId(workspaces[0].id)
     }
-  }, [open])
+  }, [open, meeting?.id])
 
   const submit = async () => {
     if (!title.trim() || !date || busy) return
@@ -34,21 +47,23 @@ export function MeetingModal({ open, onClose, onCreate, workspaces }) {
       const [hh, mm] = (time || '00:00').split(':').map(Number)
       const [y, m, d] = date.split('-').map(Number)
       const starts_at = new Date(y, m - 1, d, hh, mm).toISOString()
-      await onCreate({
+      const patch = {
         ...(workspaces ? { workspace_id: wsId } : {}),
         title: title.trim(), starts_at, duration_min: Number(duration) || 30,
         link: link.trim() || null, notes: notes.trim() || null,
-      })
+      }
+      if (isEdit) await onUpdate(meeting.id, patch)
+      else await onCreate(patch)
       onClose()
     } catch (e) {
-      setError(e.message || 'No se pudo agendar la reunión')
+      setError(e.message || 'No se pudo guardar la reunión')
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Agendar reunión">
+    <Modal open={open} onClose={onClose} title={isEdit ? 'Editar reunión' : 'Agendar reunión'}>
       <div className="flex flex-col gap-4">
         <input autoFocus value={title} onChange={e => setTitle(e.target.value)}
           placeholder="Título de la reunión"
@@ -105,7 +120,7 @@ export function MeetingModal({ open, onClose, onCreate, workspaces }) {
         {error && <p className="text-xs text-[#E2445C]">{error}</p>}
         <button onClick={submit} disabled={!title.trim() || !date || busy}
           className="w-full py-3 rounded-ios-sm bg-brand text-white font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
-          {busy ? 'Agendando…' : 'Agendar reunión'}
+          {busy ? 'Guardando…' : (isEdit ? 'Guardar cambios' : 'Agendar reunión')}
         </button>
       </div>
     </Modal>

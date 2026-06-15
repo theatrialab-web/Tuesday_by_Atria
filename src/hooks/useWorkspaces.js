@@ -108,3 +108,28 @@ export function useWorkspace(workspaceId) {
 
   return { workspace, members, loading, inviteByEmail, removeMember, refetch: fetchAll }
 }
+
+// Personas que ya están en alguno de mis workspaces (para autocompletar invitaciones).
+export function useKnownContacts() {
+  const [contacts, setContacts] = useState([])
+
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      // RLS limita workspace_members a los workspaces donde soy miembro.
+      const { data } = await supabase
+        .from('workspace_members')
+        .select('user_id, profiles(id, email, full_name, avatar_url)')
+      if (!alive) return
+      const map = new Map()
+      for (const row of data || []) {
+        const p = row.profiles
+        if (p && !map.has(p.id)) map.set(p.id, p)
+      }
+      setContacts([...map.values()])
+    })()
+    return () => { alive = false }
+  }, [])
+
+  return contacts
+}

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useBoard } from '../hooks/useBoard'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { TaskDetail } from './TaskDetail'
@@ -9,6 +10,16 @@ export function TaskQuickView({ taskId, boardId, onClose, onChanged }) {
   const isMobile = useIsMobile()
   const task = board.tasks.find(t => t.id === taskId) || null
 
+  const [width, setWidth] = useState(() => {
+    const s = Number(localStorage.getItem('task-panel-width'))
+    return s >= 360 && s <= 820 ? s : 460
+  })
+  const onResize = (w) => {
+    const clamped = Math.min(820, Math.max(360, w))
+    setWidth(clamped)
+    localStorage.setItem('task-panel-width', String(clamped))
+  }
+
   const wrap = (fn) => async (...args) => { const r = await fn(...args); onChanged?.(); return r }
 
   return (
@@ -16,6 +27,6 @@ export function TaskQuickView({ taskId, boardId, onClose, onChanged }) {
       values={board.values} members={board.members} subtasksOf={board.subtasksOf}
       createTask={board.createTask} updateTask={wrap(board.updateTask)}
       deleteTask={wrap(board.deleteTask)} setValue={wrap(board.setValue)}
-      isMobile={isMobile} onClose={onClose} />
+      isMobile={isMobile} width={width} onResize={onResize} onClose={onClose} />
   )
 }

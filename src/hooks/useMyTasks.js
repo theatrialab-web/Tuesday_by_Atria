@@ -90,13 +90,15 @@ export function useNotifications() {
 
   useEffect(() => {
     if (!user) return
+    const refresh = () => fetchAll()
+    window.addEventListener('notifications-changed', refresh)
     const channel = supabase.channel(`notifs-${user.id}-${Math.random().toString(36).slice(2)}`)
     channel
       .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
         () => fetchAll())
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
+    return () => { window.removeEventListener('notifications-changed', refresh); supabase.removeChannel(channel) }
   }, [user?.id])
 
   const unreadCount = notifications.filter(n => !n.read).length
@@ -104,11 +106,13 @@ export function useNotifications() {
   const markRead = async (id) => {
     setNotifications(ns => ns.map(n => (n.id === id ? { ...n, read: true } : n)))
     await supabase.from('notifications').update({ read: true }).eq('id', id)
+    window.dispatchEvent(new Event('notifications-changed'))
   }
 
   const markAllRead = async () => {
     setNotifications(ns => ns.map(n => ({ ...n, read: true })))
     await supabase.from('notifications').update({ read: true }).eq('user_id', user.id).eq('read', false)
+    window.dispatchEvent(new Event('notifications-changed'))
   }
 
   return { notifications, unreadCount, loading, markRead, markAllRead }

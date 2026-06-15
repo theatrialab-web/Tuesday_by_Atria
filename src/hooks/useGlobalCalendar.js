@@ -23,6 +23,14 @@ export function useGlobalCalendar() {
       `)
       .eq('board_columns.type', 'date')
 
+    // Tareas asignadas a mí (columna person que me contiene)
+    const { data: mineRows } = await supabase
+      .from('task_values')
+      .select('task_id, board_columns!inner(type)')
+      .eq('board_columns.type', 'person')
+      .contains('value', JSON.stringify([user.id]))
+    const mineSet = new Set((mineRows || []).map(r => r.task_id))
+
     const map = {}
     if (!error && data) {
       for (const row of data) {
@@ -37,6 +45,7 @@ export function useGlobalCalendar() {
           boardName: t.boards?.name,
           wsName: t.boards?.workspaces?.name,
           color: t.boards?.workspaces?.color || '#290880',
+          mine: mineSet.has(t.id),
         }
         if (!map[d]) map[d] = []
         map[d].push(ev)
@@ -46,7 +55,7 @@ export function useGlobalCalendar() {
     // Reuniones (RLS limita a los workspaces del usuario)
     const { data: meets } = await supabase
       .from('meetings')
-      .select('id, title, starts_at, link, duration_min, workspaces(name)')
+      .select('id, title, starts_at, link, duration_min, created_by, workspaces(name)')
     if (meets) {
       const pad = (n) => String(n).padStart(2, '0')
       for (const m of meets) {
@@ -61,6 +70,7 @@ export function useGlobalCalendar() {
           link: m.link,
           wsName: m.workspaces?.name,
           color: '#6C4FF7',
+          mine: m.created_by === user.id,
         })
       }
     }
