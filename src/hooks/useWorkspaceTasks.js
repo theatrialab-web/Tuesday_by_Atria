@@ -68,6 +68,7 @@ export function useWorkspaceTasks(workspaceId) {
         boardId: t.board_id,
         boardName: board?.name || '',
         boardColor: colorOf[t.board_id],
+        boardIcon: board?.icon || null,
         statusColId: statusCol?.id || null,
         statusOptions: sOpts,
         statusValue: statusVal ?? null,
