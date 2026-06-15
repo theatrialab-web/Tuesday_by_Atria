@@ -8,6 +8,7 @@ import Workspace from './pages/Workspace'
 import Board from './pages/Board'
 import MisTareas from './pages/MisTareas'
 import Calendario from './pages/Calendario'
+import Reuniones from './pages/Reuniones'
 import Cobros from './pages/Cobros'
 import Notificaciones from './pages/Notificaciones'
 import Perfil from './pages/Perfil'
@@ -30,6 +31,7 @@ function Protected() {
         <Route path="/" element={<Home />} />
         <Route path="/mis-tareas" element={<MisTareas />} />
         <Route path="/calendario" element={<Calendario />} />
+        <Route path="/reuniones" element={<Reuniones />} />
         <Route path="/cobros" element={<Cobros />} />
         <Route path="/notificaciones" element={<Notificaciones />} />
         <Route path="/perfil" element={<Perfil />} />

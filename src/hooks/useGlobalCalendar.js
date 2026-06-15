@@ -42,6 +42,29 @@ export function useGlobalCalendar() {
         map[d].push(ev)
       }
     }
+
+    // Reuniones (RLS limita a los workspaces del usuario)
+    const { data: meets } = await supabase
+      .from('meetings')
+      .select('id, title, starts_at, link, duration_min, workspaces(name)')
+    if (meets) {
+      const pad = (n) => String(n).padStart(2, '0')
+      for (const m of meets) {
+        const dt = new Date(m.starts_at)
+        const d = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`
+        const time = dt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+        if (!map[d]) map[d] = []
+        map[d].push({
+          type: 'meeting',
+          meetingId: m.id,
+          title: `${time} ${m.title}`,
+          link: m.link,
+          wsName: m.workspaces?.name,
+          color: '#6C4FF7',
+        })
+      }
+    }
+
     setEventsByDate(map)
     setLoading(false)
   }, [user])

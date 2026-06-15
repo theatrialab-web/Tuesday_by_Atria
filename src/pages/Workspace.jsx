@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ClipboardList, Plus, Users, Trash2, LayoutGrid, Table2, CalendarDays, CircleDot, Pencil, CreditCard } from 'lucide-react'
+import { ClipboardList, Plus, Users, Trash2, LayoutGrid, Table2, CalendarDays, CircleDot, Pencil, CreditCard, Video } from 'lucide-react'
 import { useWorkspace, useWorkspaces } from '../hooks/useWorkspaces'
 import { useBoards } from '../hooks/useBoards'
 import { useWorkspaceTasks } from '../hooks/useWorkspaceTasks'
@@ -10,6 +10,7 @@ import { WorkspaceIcon, Avatar, OptionSheet } from '../components/ui'
 import { CreateBoardModal, MembersModal } from '../components/CreateModals'
 import { IconPickerModal } from '../components/IconEmojiPicker'
 import { BillingView } from '../components/BillingView'
+import { MeetingsView } from '../components/MeetingsView'
 import { WorkspaceTable } from '../components/WorkspaceTable'
 import { MonthCalendar } from '../components/MonthCalendar'
 import { BulkBar } from '../components/BulkBar'
@@ -133,9 +134,11 @@ export default function Workspace() {
         {tab('table', 'Tabla', Table2)}
         {tab('calendar', 'Calendario', CalendarDays)}
         {tab('billing', 'Pagos', CreditCard)}
+        {tab('meetings', 'Reuniones', Video)}
       </div>
 
       {view === 'billing' && <BillingView workspaceId={id} />}
+      {view === 'meetings' && <MeetingsView workspaceId={id} />}
 
       {view === 'boards' && (
         loading ? (

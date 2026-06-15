@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Home, CircleCheck, Bell, CircleUser, Plus, PanelLeftClose, PanelLeftOpen,
-  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard,
+  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard, Video, LayoutGrid,
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -171,6 +171,9 @@ function Sidebar() {
         <NavLink to="/calendario" className={({ isActive }) => navItemCls(isActive)}>
           <CalendarDays size={18} strokeWidth={1.75} className="shrink-0" />{!collapsed && 'Calendario'}
         </NavLink>
+        <NavLink to="/reuniones" className={({ isActive }) => navItemCls(isActive)}>
+          <Video size={18} strokeWidth={1.75} className="shrink-0" />{!collapsed && 'Reuniones'}
+        </NavLink>
         <NavLink to="/cobros" className={({ isActive }) => navItemCls(isActive)}>
           <CreditCard size={18} strokeWidth={1.75} className="shrink-0" />{!collapsed && 'Cobros'}
         </NavLink>
@@ -224,32 +227,50 @@ function Sidebar() {
 
 function BottomNav({ onCreate }) {
   const { unreadCount } = useNotifications()
+  const [moreOpen, setMoreOpen] = useState(false)
   const item = 'flex flex-col items-center justify-center flex-1 py-1.5 text-[10px] gap-0.5'
   const active = ({ isActive }) => `${item} ${isActive ? 'text-brand dark:text-white' : 'text-2'}`
+  const sheetLink = ({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-ios-sm text-sm font-medium ${isActive ? 'bg-brand-soft dark:bg-brand-softDark text-brand dark:text-white' : 'surface-2'}`
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 surface border-t hairline flex items-stretch pb-[env(safe-area-inset-bottom)]">
-      <NavLink to="/" end className={active}><Home size={21} />Inicio</NavLink>
-      <NavLink to="/mis-tareas" className={active}><CircleCheck size={21} />Tareas</NavLink>
-      <button onClick={onCreate} aria-label="Crear"
-        className="flex items-center justify-center w-14 -mt-4 mx-1">
-        <span className="w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform">
-          <Plus size={24} />
-        </span>
-      </button>
-      <NavLink to="/notificaciones" className={active}>
-        <span className="relative">
-          <Bell size={21} />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-0.5 rounded-full bg-[#E2445C] text-white text-[9px] font-semibold flex items-center justify-center">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </span>
-        Avisos
-      </NavLink>
-      <NavLink to="/cobros" className={active}><CreditCard size={21} />Cobros</NavLink>
-      <NavLink to="/perfil" className={active}><CircleUser size={21} />Perfil</NavLink>
-    </nav>
+    <>
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 surface border-t hairline flex items-stretch pb-[env(safe-area-inset-bottom)]">
+        <NavLink to="/" end className={active}><Home size={21} />Inicio</NavLink>
+        <NavLink to="/mis-tareas" className={active}><CircleCheck size={21} />Tareas</NavLink>
+        <button onClick={onCreate} aria-label="Crear"
+          className="flex items-center justify-center w-14 -mt-4 mx-1">
+          <span className="w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform">
+            <Plus size={24} />
+          </span>
+        </button>
+        <NavLink to="/notificaciones" className={active}>
+          <span className="relative">
+            <Bell size={21} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-0.5 rounded-full bg-[#E2445C] text-white text-[9px] font-semibold flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </span>
+          Avisos
+        </NavLink>
+        <button onClick={() => setMoreOpen(true)} className={`${item} text-2`}><LayoutGrid size={21} />Más</button>
+        <NavLink to="/perfil" className={active}><CircleUser size={21} />Perfil</NavLink>
+      </nav>
+
+      {moreOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex items-end" onClick={() => setMoreOpen(false)}>
+          <div className="absolute inset-0 bg-black/30 anim-fade" />
+          <div className="relative surface w-full rounded-t-ios p-4 anim-sheet shadow-2xl pb-[max(1.5rem,env(safe-area-inset-bottom))]" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full surface-2 mx-auto mb-4" />
+            <div className="flex flex-col gap-1.5">
+              <NavLink to="/calendario" onClick={() => setMoreOpen(false)} className={sheetLink}><CalendarDays size={18} /> Calendario</NavLink>
+              <NavLink to="/reuniones" onClick={() => setMoreOpen(false)} className={sheetLink}><Video size={18} /> Reuniones</NavLink>
+              <NavLink to="/cobros" onClick={() => setMoreOpen(false)} className={sheetLink}><CreditCard size={18} /> Cobros</NavLink>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 

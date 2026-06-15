@@ -12,21 +12,36 @@ export default function Calendario() {
   const [addDate, setAddDate] = useState(null)
   const [quick, setQuick] = useState(null)
 
-  // Adaptar al formato de MonthCalendar (coloreado por workspace)
+  // Adaptar al formato de MonthCalendar (tareas por workspace + reuniones)
   const eventsByDate = useMemo(() => {
     const map = {}
     for (const [date, evs] of Object.entries(raw)) {
-      map[date] = evs.map((ev, i) => ({
+      map[date] = evs.map((ev, i) => ev.type === 'meeting' ? {
+        key: `m-${ev.meetingId}-${i}`,
+        title: ev.title,
+        color: ev.color,
+        subtitle: `${ev.wsName || ''} · Reunión`,
+        type: 'meeting',
+        link: ev.link,
+      } : {
         key: `${ev.taskId}-${i}`,
         title: ev.title,
         color: ev.color,
         subtitle: `${ev.wsName} · ${ev.boardName}`,
         boardId: ev.boardId,
         taskId: ev.taskId,
-      }))
+      })
     }
     return map
   }, [raw])
+
+  const onEventClick = (ev) => {
+    if (ev.type === 'meeting') {
+      if (ev.link) window.open(ev.link, '_blank', 'noopener')
+      return
+    }
+    if (ev.taskId && ev.boardId) setQuick({ taskId: ev.taskId, boardId: ev.boardId })
+  }
 
   const emptyHint = (
     <div className="rounded-ios border-2 border-dashed hairline p-10 flex flex-col items-center gap-3 text-2 mt-4">
@@ -39,13 +54,13 @@ export default function Calendario() {
     <div className="p-5 sm:p-8 max-w-6xl mx-auto">
       <div className="mb-4">
         <h1 className="text-2xl font-semibold leading-tight">Calendario</h1>
-        <p className="text-sm text-2">Todas tus tareas con fecha</p>
+        <p className="text-sm text-2">Tus tareas con fecha y tus reuniones</p>
       </div>
       {loading ? (
         <p className="text-sm text-2">Cargando…</p>
       ) : (
         <MonthCalendar eventsByDate={eventsByDate} isMobile={isMobile}
-          onEventClick={(ev) => ev.taskId && ev.boardId && setQuick({ taskId: ev.taskId, boardId: ev.boardId })}
+          onEventClick={onEventClick}
           onDayClick={(date) => setAddDate(date)}
           emptyHint={emptyHint} />
       )}
