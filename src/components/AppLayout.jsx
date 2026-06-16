@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Home, CircleCheck, Bell, CircleUser, Plus, PanelLeftClose, PanelLeftOpen,
-  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard, Video, LayoutGrid,
+  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard, Video, LayoutGrid, GripVertical,
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -129,7 +129,8 @@ function WorkspaceNavItem({ ws, collapsed }) {
   }
   return (
     <div>
-      <div className="flex items-center">
+      <div className="flex items-center group/ws">
+        <GripVertical size={14} className="shrink-0 text-2 opacity-0 group-hover/ws:opacity-100 cursor-grab active:cursor-grabbing -mr-1" />
         <NavLink to={`/workspace/${ws.id}`} className={({ isActive }) => navItemCls(isActive) + ' flex-1 min-w-0'}>
           <WorkspaceIcon icon={ws.icon} color={ws.color} size={24} />
           <span className="truncate">{ws.name}</span>
@@ -148,8 +149,20 @@ function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const { profile, signOut } = useAuth()
   const { theme, toggle } = useTheme()
-  const { workspaces } = useWorkspaces()
+  const { workspaces, reorderWorkspaces } = useWorkspaces()
   const { unreadCount } = useNotifications()
+  const [dragId, setDragId] = useState(null)
+  const [overId, setOverId] = useState(null)
+
+  const onDrop = (targetId) => {
+    const ids = workspaces.map(w => w.id)
+    const from = ids.indexOf(dragId)
+    const to = ids.indexOf(targetId)
+    setDragId(null); setOverId(null)
+    if (from < 0 || to < 0 || from === to) return
+    ids.splice(to, 0, ids.splice(from, 1)[0])
+    reorderWorkspaces(ids)
+  }
 
   return (
     <aside className={`hidden md:flex flex-col surface border-r hairline transition-all ${collapsed ? 'w-[68px]' : 'w-64'} shrink-0 h-dvh sticky top-0`}>
@@ -203,7 +216,15 @@ function Sidebar() {
         {!collapsed && <SidebarSearch workspaces={workspaces} />}
         <div className="flex flex-col gap-1">
           {workspaces.map(ws => (
-            <WorkspaceNavItem key={ws.id} ws={ws} collapsed={collapsed} />
+            <div key={ws.id}
+              draggable
+              onDragStart={(e) => { setDragId(ws.id); e.dataTransfer.effectAllowed = 'move' }}
+              onDragOver={(e) => { e.preventDefault(); if (dragId && ws.id !== overId) setOverId(ws.id) }}
+              onDrop={() => onDrop(ws.id)}
+              onDragEnd={() => { setDragId(null); setOverId(null) }}
+              className={`rounded-ios-sm transition-opacity ${dragId === ws.id ? 'opacity-40' : ''} ${overId === ws.id && dragId && dragId !== ws.id ? 'ring-2 ring-brand-light' : ''}`}>
+              <WorkspaceNavItem ws={ws} collapsed={collapsed} />
+            </div>
           ))}
         </div>
       </div>

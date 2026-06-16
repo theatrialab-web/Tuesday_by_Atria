@@ -11,6 +11,7 @@ export function useWorkspaces() {
     const { data, error } = await supabase
       .from('workspaces')
       .select('*')
+      .order('position', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: true })
     if (!error) setWorkspaces(data || [])
     setLoading(false)
@@ -51,7 +52,18 @@ export function useWorkspaces() {
     window.dispatchEvent(new CustomEvent('workspaces-changed'))
   }
 
-  return { workspaces, loading, createWorkspace, deleteWorkspace, updateWorkspace, refetch: fetchWorkspaces }
+  const reorderWorkspaces = async (orderedIds) => {
+    setWorkspaces(ws => {
+      const map = Object.fromEntries(ws.map(w => [w.id, w]))
+      return orderedIds.map((id, i) => ({ ...map[id], position: i })).filter(w => w.id)
+    })
+    try {
+      await Promise.all(orderedIds.map((id, i) => supabase.from('workspaces').update({ position: i }).eq('id', id)))
+    } catch { fetchWorkspaces(); return }
+    window.dispatchEvent(new CustomEvent('workspaces-changed'))
+  }
+
+  return { workspaces, loading, createWorkspace, deleteWorkspace, updateWorkspace, reorderWorkspaces, refetch: fetchWorkspaces }
 }
 
 export function useWorkspace(workspaceId) {
