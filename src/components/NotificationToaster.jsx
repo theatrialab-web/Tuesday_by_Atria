@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { Avatar } from './ui'
+import { playNotificationSound } from '../lib/sound'
 
 function describe(n) {
   const t = n.content ? `"${n.content}"` : 'una tarea'
@@ -28,6 +29,7 @@ export function NotificationToaster({ onOpenTask }) {
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
         async (payload) => {
+          playNotificationSound()
           const { data } = await supabase
             .from('notifications')
             .select('*, actor:profiles!notifications_actor_id_fkey(full_name, avatar_url), board:boards(name, icon)')

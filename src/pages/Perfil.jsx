@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
-import { Moon, Sun, LogOut, Camera, Bell } from 'lucide-react'
+import { Moon, Sun, LogOut, Camera, Bell, Volume2, VolumeX } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
-import { Avatar } from '../components/ui'
+import { Avatar, Checkbox } from '../components/ui'
 import { GlobalTeam } from '../components/GlobalTeam'
 import { supabase } from '../lib/supabase'
+import { notifSoundEnabled, setNotifSound, playNotificationSound } from '../lib/sound'
 
 export default function Perfil() {
   const { profile, user, signOut, refreshProfile } = useAuth()
@@ -13,6 +14,7 @@ export default function Perfil() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [perm, setPerm] = useState(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported')
+  const [sound, setSound] = useState(notifSoundEnabled())
 
   const enableNotifs = async () => {
     if (typeof Notification === 'undefined') return
@@ -98,7 +100,7 @@ export default function Perfil() {
           <span className="text-sm text-2">{theme === 'light' ? 'Claro' : 'Oscuro'}</span>
         </button>
         <button onClick={enableNotifs} disabled={perm === 'granted' || perm === 'unsupported'}
-          className="w-full flex items-center justify-between px-4 py-3.5 text-left">
+          className="w-full flex items-center justify-between px-4 py-3.5 text-left border-b hairline">
           <span className="flex items-center gap-3 text-sm font-medium">
             <Bell size={18} />
             Notificaciones de escritorio
@@ -110,6 +112,13 @@ export default function Perfil() {
               : 'Activar'}
           </span>
         </button>
+        <div className="w-full flex items-center justify-between px-4 py-3.5">
+          <span className="flex items-center gap-3 text-sm font-medium">
+            {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
+            Sonido de notificaciones
+          </span>
+          <Checkbox checked={sound} onChange={(v) => { setSound(v); setNotifSound(v); if (v) playNotificationSound() }} ariaLabel="Sonido de notificaciones" />
+        </div>
       </div>
       {perm === 'denied' && (
         <p className="text-xs text-2 -mt-3 mb-5 px-1">
