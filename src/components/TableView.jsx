@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronDown, ChevronRight, Plus, Trash2, Settings2, Pencil, Check } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Trash2, Settings2, Pencil, Check, Maximize2, CornerDownRight } from 'lucide-react'
 import { OptionPill, OptionSheet, Checkbox } from './ui'
 import { PersonCell, DateCell, TagCell } from './cells'
 import { formatDate, colOptions, colMulti } from '../lib/constants'
@@ -124,45 +124,71 @@ export function CellValue({ column, value, members, onChange, small = false, onE
   }
 }
 
-function SubtaskList({ task, subtasks, createTask, updateTask, deleteTask }) {
-  const [draft, setDraft] = useState('')
-  const done = subtasks.filter(s => s.completed).length
-  const pct = subtasks.length ? Math.round((done / subtasks.length) * 100) : 0
+function SubtaskRow({ s, columns, values, members, setValue, updateTask, deleteTask, onOpenTask, onEditColumn }) {
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState(s.title)
+  const save = () => { const v = name.trim(); if (v && v !== s.title) updateTask(s.id, { title: v }); setEditing(false) }
 
   return (
-    <div className="pl-9 pr-3 pb-3">
-      {subtasks.length > 0 && (
-        <div className="flex items-center gap-2 mb-2">
-          <div className="h-1.5 flex-1 rounded-full surface-2 overflow-hidden">
-            <div className="h-full bg-[#00C875] transition-all" style={{ width: `${pct}%` }} />
-          </div>
-          <span className="text-[11px] text-2 font-medium">{pct}%</span>
-        </div>
-      )}
-      {subtasks.map(s => (
-        <div key={s.id} className="flex items-center gap-2.5 py-1.5 group">
-          <Checkbox green checked={s.completed} size={16}
-            onChange={() => updateTask(s.id, { completed: !s.completed })} ariaLabel="Completar subtarea" />
-          <span className={`text-sm flex-1 ${s.completed ? 'line-through text-2' : ''}`}>{s.title}</span>
-          <button onClick={() => deleteTask(s.id)} aria-label="Eliminar subtarea"
-            className="opacity-0 group-hover:opacity-100 text-2 hover:text-[#E2445C]">
-            <Trash2 size={13} />
+    <tr className="border-b hairline surface-2 group">
+      <td className="pl-3" onClick={e => e.stopPropagation()}>
+        <Checkbox green size={16} checked={s.completed}
+          onChange={() => updateTask(s.id, { completed: !s.completed })} ariaLabel="Completar subtarea" />
+      </td>
+      <td className="px-3 py-1.5">
+        <div className="flex items-center gap-1.5 pl-5 min-w-0">
+          <CornerDownRight size={13} className="text-2 shrink-0" />
+          {editing ? (
+            <input autoFocus value={name} onChange={e => setName(e.target.value)} onBlur={save}
+              onClick={e => e.stopPropagation()}
+              onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') { setName(s.title); setEditing(false) } }}
+              className="flex-1 min-w-0 bg-transparent text-sm outline-none border-b border-brand-light" />
+          ) : (
+            <button onClick={() => { setName(s.title); setEditing(true) }}
+              className={`text-sm text-left truncate ${s.completed ? 'line-through text-2' : ''}`}>
+              {s.title}
+            </button>
+          )}
+          <button onClick={() => onOpenTask?.(s)} aria-label="Abrir subtarea" title="Abrir (comentarios y detalle)"
+            className="opacity-0 group-hover:opacity-100 text-2 hover:text-brand dark:hover:text-brand-light shrink-0">
+            <Maximize2 size={13} />
           </button>
         </div>
+      </td>
+      {columns.map(c => (
+        <td key={c.id} className="px-3 py-1.5" onClick={e => e.stopPropagation()}>
+          <CellValue column={c} value={values[s.id]?.[c.id] ?? null}
+            members={members} onEditColumn={onEditColumn}
+            onChange={(v) => setValue(s.id, c.id, v)} />
+        </td>
       ))}
-      <div className="flex items-center gap-2.5 py-1.5">
-        <Plus size={14} className="text-2" />
-        <input value={draft} onChange={e => setDraft(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && draft.trim()) {
-              createTask(draft.trim(), task.id)
-              setDraft('')
-            }
-          }}
-          placeholder="Agregar subtarea"
-          className="flex-1 bg-transparent text-sm placeholder:text-2" />
-      </div>
-    </div>
+      <td />
+      <td className="px-2">
+        <button onClick={() => deleteTask(s.id)} aria-label="Eliminar subtarea"
+          className="opacity-0 group-hover:opacity-100 p-1 text-2 hover:text-[#E2445C]">
+          <Trash2 size={13} />
+        </button>
+      </td>
+    </tr>
+  )
+}
+
+function AddSubtaskRow({ taskId, createTask, span }) {
+  const [draft, setDraft] = useState('')
+  return (
+    <tr className="border-b hairline surface-2">
+      <td />
+      <td className="px-3 py-1.5" colSpan={span - 1}>
+        <div className="flex items-center gap-1.5 pl-5 text-2">
+          <Plus size={14} />
+          <input value={draft} onChange={e => setDraft(e.target.value)}
+            onClick={e => e.stopPropagation()}
+            onKeyDown={e => { if (e.key === 'Enter' && draft.trim()) { createTask(draft.trim(), taskId); setDraft('') } }}
+            placeholder="Agregar subtarea"
+            className="flex-1 bg-transparent text-sm placeholder:text-2 outline-none" />
+        </div>
+      </td>
+    </tr>
   )
 }
 
@@ -245,14 +271,12 @@ export function TableView({ board, columns, topTasks, subtasksOf, values, member
                     </button>
                   </td>
                 </tr>
-                {isOpen && (
-                  <tr className="border-b hairline">
-                    <td colSpan={span}>
-                      <SubtaskList task={task} subtasks={subs}
-                        createTask={createTask} updateTask={updateTask} deleteTask={deleteTask} />
-                    </td>
-                  </tr>
-                )}
+                {isOpen && subs.map(s => (
+                  <SubtaskRow key={s.id} s={s} columns={columns} values={values} members={members}
+                    setValue={setValue} updateTask={updateTask} deleteTask={deleteTask}
+                    onOpenTask={onOpenTask} onEditColumn={onEditColumn} />
+                ))}
+                {isOpen && <AddSubtaskRow taskId={task.id} createTask={createTask} span={span} />}
               </FragmentRow>
             )
           })}
