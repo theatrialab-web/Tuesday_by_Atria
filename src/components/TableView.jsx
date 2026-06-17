@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronDown, ChevronRight, Plus, Trash2, Settings2, Pencil, Check } from 'lucide-react'
-import { OptionPill, OptionSheet } from './ui'
+import { OptionPill, OptionSheet, Checkbox } from './ui'
 import { PersonCell, DateCell, TagCell } from './cells'
 import { formatDate, colOptions, colMulti } from '../lib/constants'
 
@@ -141,9 +141,8 @@ function SubtaskList({ task, subtasks, createTask, updateTask, deleteTask }) {
       )}
       {subtasks.map(s => (
         <div key={s.id} className="flex items-center gap-2.5 py-1.5 group">
-          <input type="checkbox" checked={s.completed}
-            onChange={() => updateTask(s.id, { completed: !s.completed })}
-            className="w-4 h-4 rounded accent-[#00C875]" />
+          <Checkbox green checked={s.completed} size={16}
+            onChange={() => updateTask(s.id, { completed: !s.completed })} ariaLabel="Completar subtarea" />
           <span className={`text-sm flex-1 ${s.completed ? 'line-through text-2' : ''}`}>{s.title}</span>
           <button onClick={() => deleteTask(s.id)} aria-label="Eliminar subtarea"
             className="opacity-0 group-hover:opacity-100 text-2 hover:text-[#E2445C]">
@@ -180,9 +179,9 @@ export function TableView({ board, columns, topTasks, subtasksOf, values, member
         <thead>
           <tr className="border-b hairline text-left text-2 text-xs">
             <th className="w-9 pl-3">
-              <input type="checkbox" checked={allSelected}
+              <Checkbox checked={allSelected}
                 onChange={() => onSelectAll?.(allSelected ? [] : topTasks.map(t => t.id))}
-                className="w-4 h-4 rounded accent-brand" aria-label="Seleccionar todo" />
+                ariaLabel="Seleccionar todo" />
             </th>
             <th className="font-medium px-3 py-2.5 min-w-[240px]">Tarea</th>
             {columns.map(c => (
@@ -213,9 +212,7 @@ export function TableView({ board, columns, topTasks, subtasksOf, values, member
                 <tr className={`border-b hairline hover:surface-2 cursor-pointer group ${checked ? 'bg-brand-soft/50 dark:bg-brand-softDark/40' : ''}`}
                   onClick={() => onOpenTask(task)}>
                   <td className="pl-3" onClick={e => e.stopPropagation()}>
-                    <input type="checkbox" checked={checked}
-                      onChange={() => onToggleSelect?.(task.id)}
-                      className="w-4 h-4 rounded accent-brand" aria-label="Seleccionar tarea" />
+                    <Checkbox checked={checked} onChange={() => onToggleSelect?.(task.id)} ariaLabel="Seleccionar tarea" />
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
@@ -305,10 +302,9 @@ export function CardsView({ columns, topTasks, subtasksOf, values, members, crea
         return (
           <div key={task.id} onClick={() => onOpenTask(task)}
             className={`surface rounded-ios border hairline p-4 active:scale-[.99] transition-transform flex gap-3 cursor-pointer ${checked ? 'ring-2 ring-brand' : ''}`}>
-            <input type="checkbox" checked={checked}
-              onClick={e => e.stopPropagation()}
-              onChange={() => onToggleSelect?.(task.id)}
-              className="w-4 h-4 rounded accent-brand mt-1 shrink-0" aria-label="Seleccionar tarea" />
+            <div className="mt-1 shrink-0">
+              <Checkbox checked={checked} onChange={() => onToggleSelect?.(task.id)} ariaLabel="Seleccionar tarea" />
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-2.5">
                 <p className="font-semibold text-[15px] leading-snug">{task.title}</p>

@@ -165,6 +165,7 @@ export default function Board() {
         createTask={board.createTask} updateTask={board.updateTask}
         deleteTask={board.deleteTask} setValue={board.setValue}
         onEditColumn={setEditingColumn} isMobile={isMobile} linkToBoard={false}
+        onOpenTask={(tid) => setOpenTask({ id: tid })}
         width={panelWidth} onResize={resizePanel}
         onClose={() => setOpenTask(null)} />
 

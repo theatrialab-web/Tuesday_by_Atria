@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useBoard } from '../hooks/useBoard'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { TaskDetail } from './TaskDetail'
@@ -8,7 +8,9 @@ import { TaskDetail } from './TaskDetail'
 export function TaskQuickView({ taskId, boardId, onClose, onChanged }) {
   const board = useBoard(boardId)
   const isMobile = useIsMobile()
-  const task = board.tasks.find(t => t.id === taskId) || null
+  const [activeId, setActiveId] = useState(taskId)
+  useEffect(() => { setActiveId(taskId) }, [taskId])
+  const task = board.tasks.find(t => t.id === activeId) || null
 
   const [width, setWidth] = useState(() => {
     const s = Number(localStorage.getItem('task-panel-width'))
@@ -27,6 +29,7 @@ export function TaskQuickView({ taskId, boardId, onClose, onChanged }) {
       values={board.values} members={board.members} subtasksOf={board.subtasksOf}
       createTask={board.createTask} updateTask={wrap(board.updateTask)}
       deleteTask={wrap(board.deleteTask)} setValue={wrap(board.setValue)}
-      isMobile={isMobile} width={width} onResize={onResize} onClose={onClose} />
+      isMobile={isMobile} width={width} onResize={onResize} onClose={onClose}
+      onOpenTask={(tid) => setActiveId(tid)} />
   )
 }

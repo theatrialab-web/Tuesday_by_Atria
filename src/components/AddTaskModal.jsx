@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Modal, WorkspaceIcon } from './ui'
+import { Modal, WorkspaceIcon, Checkbox } from './ui'
 import { supabase } from '../lib/supabase'
 import { fromDateStr } from '../lib/calendar'
 import { useAuth } from '../contexts/AuthContext'
@@ -98,11 +98,10 @@ export function AddTaskModal({ open, onClose, onCreated, initialDate = null }) {
           )}
         </div>
 
-        <label className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-ios-sm surface-2 cursor-pointer">
+        <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-ios-sm surface-2">
           <span className="text-sm font-medium">Asignármela a mí</span>
-          <input type="checkbox" checked={assignSelf} onChange={e => setAssignSelf(e.target.checked)}
-            className="w-4 h-4 rounded accent-brand" />
-        </label>
+          <Checkbox checked={assignSelf} onChange={setAssignSelf} ariaLabel="Asignármela a mí" />
+        </div>
 
         {error && <p className="text-xs text-[#E2445C]">{error}</p>}
         <button onClick={submit} disabled={!title.trim() || !boardId || busy}

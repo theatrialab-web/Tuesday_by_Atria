@@ -1,13 +1,27 @@
 import { createPortal } from 'react-dom'
 import { useEffect, useState } from 'react'
 import {
-  X, ChevronDown, Briefcase, Rocket, Star, Heart, Zap, Globe, Palette, ShoppingBag,
+  X, Check, ChevronDown, Briefcase, Rocket, Star, Heart, Zap, Globe, Palette, ShoppingBag,
   Home as HomeIcon, Folder, Code, Camera, Music, Book, Coffee, Gamepad2,
   Gift, Leaf, Flame, Trophy, Target, Lightbulb, PenTool, Bug, Cloud,
   Database, Smartphone, Megaphone, Calendar, Flag, Bookmark, Crown, Gem,
   Wrench, Sparkles, Building2, Truck, Headphones, Pizza,
 } from 'lucide-react'
 import { initials } from '../lib/constants'
+
+// Checkbox con el estilo de la app (cuadrado redondeado, marca de check).
+export function Checkbox({ checked, onChange, size = 18, green = false, className = '', ariaLabel }) {
+  return (
+    <button type="button" role="checkbox" aria-checked={checked} aria-label={ariaLabel}
+      onClick={(e) => { e.stopPropagation(); onChange(!checked) }}
+      style={{ width: size, height: size, ...(checked && green ? { backgroundColor: '#00C875', borderColor: '#00C875' } : {}) }}
+      className={`shrink-0 grid place-items-center rounded-[6px] border transition-colors ${
+        checked ? (green ? 'text-white' : 'bg-brand border-brand text-white') : 'surface hairline border hover:border-brand'
+      } ${className}`}>
+      {checked && <Check size={Math.round(size * 0.66)} strokeWidth={3} />}
+    </button>
+  )
+}
 
 // Modal centrado en desktop, bottom-sheet en móvil
 export function Modal({ open, onClose, title, children, wide = false }) {

@@ -1,18 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Paperclip, Send, Trash2, FileText, Plus, PanelRightClose, Bold, Italic, Strikethrough, Pencil, ExternalLink } from 'lucide-react'
-import { Modal, Avatar } from './ui'
+import { Paperclip, Send, Trash2, FileText, Plus, PanelRightClose, Bold, Italic, Strikethrough, Pencil, ExternalLink, Maximize2 } from 'lucide-react'
+import { Modal, Avatar, Checkbox } from './ui'
 import { renderRich, wrapSelection, insertAtCursor } from '../lib/richtext'
 import { EmojiPicker } from './EmojiPicker'
 import { CellValue } from './TableView'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
-function Subtasks({ task, subtasksOf, createTask, updateTask, deleteTask }) {
+function Subtasks({ task, subtasksOf, createTask, updateTask, deleteTask, setValue, onOpenTask, columns, values, members }) {
   const subs = subtasksOf(task.id)
   const [draft, setDraft] = useState('')
+  const [editId, setEditId] = useState(null)
+  const [editName, setEditName] = useState('')
   const done = subs.filter(s => s.completed).length
   const pct = subs.length ? Math.round((done / subs.length) * 100) : 0
+
+  const saveName = (s) => {
+    const v = editName.trim()
+    if (v && v !== s.title) updateTask(s.id, { title: v })
+    setEditId(null)
+  }
 
   return (
     <section>
@@ -27,15 +35,38 @@ function Subtasks({ task, subtasksOf, createTask, updateTask, deleteTask }) {
       )}
       <div className="flex flex-col">
         {subs.map(s => (
-          <div key={s.id} className="flex items-center gap-2.5 py-2 group border-b hairline last:border-0">
-            <input type="checkbox" checked={s.completed}
-              onChange={() => updateTask(s.id, { completed: !s.completed })}
-              className="w-4 h-4 rounded accent-[#00C875]" />
-            <span className={`text-sm flex-1 ${s.completed ? 'line-through text-2' : ''}`}>{s.title}</span>
-            <button onClick={() => deleteTask(s.id)} aria-label="Eliminar subtarea"
-              className="sm:opacity-0 group-hover:opacity-100 text-2 hover:text-[#E2445C]">
-              <Trash2 size={14} />
-            </button>
+          <div key={s.id} className="py-2 group border-b hairline last:border-0">
+            <div className="flex items-center gap-2.5">
+              <Checkbox green size={16} checked={s.completed}
+                onChange={() => updateTask(s.id, { completed: !s.completed })} ariaLabel="Completar subtarea" />
+              {editId === s.id ? (
+                <input autoFocus value={editName} onChange={e => setEditName(e.target.value)}
+                  onBlur={() => saveName(s)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveName(s); if (e.key === 'Escape') setEditId(null) }}
+                  className="flex-1 min-w-0 bg-transparent text-sm font-medium outline-none border-b border-brand" />
+              ) : (
+                <button onClick={() => { setEditId(s.id); setEditName(s.title) }}
+                  className={`text-sm flex-1 min-w-0 truncate text-left ${s.completed ? 'line-through text-2' : ''}`}>
+                  {s.title}
+                </button>
+              )}
+              <button onClick={() => onOpenTask?.(s.id)} aria-label="Abrir subtarea"
+                className="sm:opacity-0 group-hover:opacity-100 text-2 hover:text-brand dark:hover:text-brand-light shrink-0" title="Abrir (comentarios y detalle)">
+                <Maximize2 size={14} />
+              </button>
+              <button onClick={() => deleteTask(s.id)} aria-label="Eliminar subtarea"
+                className="sm:opacity-0 group-hover:opacity-100 text-2 hover:text-[#E2445C] shrink-0">
+                <Trash2 size={14} />
+              </button>
+            </div>
+            {columns?.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 mt-1.5 pl-[26px]">
+                {columns.map(c => (
+                  <CellValue key={c.id} column={c} value={values?.[s.id]?.[c.id] ?? null}
+                    members={members} small onChange={(v) => setValue(s.id, c.id, v)} />
+                ))}
+              </div>
+            )}
           </div>
         ))}
         <div className="flex items-center gap-2.5 py-2">
@@ -359,7 +390,7 @@ function Files({ task, boardId }) {
   )
 }
 
-export function TaskDetail({ task, board, columns, values, members, subtasksOf, createTask, updateTask, deleteTask, setValue, onClose, onEditColumn, isMobile = false, width = 460, onResize, linkToBoard = true }) {
+export function TaskDetail({ task, board, columns, values, members, subtasksOf, createTask, updateTask, deleteTask, setValue, onClose, onEditColumn, onOpenTask, isMobile = false, width = 460, onResize, linkToBoard = true }) {
   const navigate = useNavigate()
   const [title, setTitle] = useState(task?.title || '')
   useEffect(() => { setTitle(task?.title || '') }, [task?.id])
@@ -404,7 +435,8 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
       </div>
 
       <Subtasks task={task} subtasksOf={subtasksOf}
-        createTask={createTask} updateTask={updateTask} deleteTask={deleteTask} />
+        createTask={createTask} updateTask={updateTask} deleteTask={deleteTask} setValue={setValue}
+        onOpenTask={onOpenTask} columns={columns} values={values} members={members} />
       <Files task={task} boardId={board.id} />
       <Comments task={task} boardId={board.id} members={members} />
 

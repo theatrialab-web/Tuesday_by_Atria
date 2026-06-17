@@ -6,7 +6,7 @@ import { useBoards } from '../hooks/useBoards'
 import { useWorkspaceTasks } from '../hooks/useWorkspaceTasks'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../contexts/AuthContext'
-import { WorkspaceIcon, Avatar, OptionSheet } from '../components/ui'
+import { WorkspaceIcon, Avatar, OptionSheet, Checkbox } from '../components/ui'
 import { CreateBoardModal, MembersModal } from '../components/CreateModals'
 import { IconPickerModal } from '../components/IconEmojiPicker'
 import { BillingView } from '../components/BillingView'
@@ -159,9 +159,7 @@ export default function Workspace() {
               return (
                 <div key={b.id}
                   className={`surface rounded-ios border hairline p-5 flex items-center gap-3 ${checked ? 'ring-2 ring-brand' : ''}`}>
-                  <input type="checkbox" checked={checked}
-                    onChange={() => toggleBoard(b.id)}
-                    className="w-4 h-4 rounded accent-brand shrink-0" aria-label="Seleccionar board" />
+                  <Checkbox checked={checked} onChange={() => toggleBoard(b.id)} ariaLabel="Seleccionar board" className="shrink-0" />
                   <button onClick={(e) => { e.stopPropagation(); setEditBoard(b) }}
                     aria-label="Cambiar icono del board" className="shrink-0 active:scale-95 transition-transform">
                     <WorkspaceIcon icon={b.icon || '📋'} color={b.color || '#E4E4E9'} size={40} />

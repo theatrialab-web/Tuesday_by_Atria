@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ChevronDown, ExternalLink } from 'lucide-react'
-import { Avatar, OptionPill, OptionSheet, WorkspaceIcon } from './ui'
+import { Avatar, OptionPill, OptionSheet, WorkspaceIcon, Checkbox } from './ui'
 import { formatDate } from '../lib/constants'
 
 function StatusQuick({ row, onSetStatus }) {
@@ -43,9 +43,7 @@ export function WorkspaceTable({ tasks, members, onSetStatus, onOpenTask, onOpen
     return (
       <tr className={`border-b hairline hover:surface-2 ${checked ? 'bg-brand-soft/50 dark:bg-brand-softDark/40' : ''}`}>
         <td className="pl-3">
-          <input type="checkbox" checked={checked}
-            onChange={() => onToggleSelect(t.id)}
-            className="w-4 h-4 rounded accent-brand" aria-label="Seleccionar tarea" />
+          <Checkbox checked={checked} onChange={() => onToggleSelect(t.id)} ariaLabel="Seleccionar tarea" />
         </td>
         <td className="px-3 py-2">
           <button onClick={() => onOpenTask(t)} className="font-medium text-left hover:text-brand dark:hover:text-brand-light">
@@ -72,9 +70,9 @@ export function WorkspaceTable({ tasks, members, onSetStatus, onOpenTask, onOpen
         <thead>
           <tr className="border-b hairline text-left text-2 text-xs">
             <th className="w-9 pl-3">
-              <input type="checkbox" checked={allSelected}
+              <Checkbox checked={allSelected}
                 onChange={() => onSelectAll(allSelected ? [] : tasks.map(t => t.id))}
-                className="w-4 h-4 rounded accent-brand" aria-label="Seleccionar todo" />
+                ariaLabel="Seleccionar todo" />
             </th>
             <th className="font-medium px-3 py-2.5 min-w-[240px]">Tarea</th>
             <th className="font-medium px-3 py-2.5">Estado</th>

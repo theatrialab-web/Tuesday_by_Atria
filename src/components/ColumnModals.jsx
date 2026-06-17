@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Plus, Trash2, Type, Hash, Calendar, User, Tag, Flag, CircleDot } from 'lucide-react'
-import { Modal } from './ui'
+import { Modal, Checkbox } from './ui'
 import { WORKSPACE_COLORS, colOptions, colMulti, buildOptions } from '../lib/constants'
 
 const SELECT_TYPES = ['status', 'priority', 'tag']
@@ -60,11 +60,10 @@ export function AddColumnModal({ open, onClose, addColumn }) {
         </div>
 
         {selectable && (
-          <label className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-ios-sm surface-2 cursor-pointer">
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-ios-sm surface-2">
             <span className="text-sm font-medium">Permitir varias opciones por tarea</span>
-            <input type="checkbox" checked={multi} onChange={e => setMulti(e.target.checked)}
-              className="w-4 h-4 rounded accent-brand" />
-          </label>
+            <Checkbox checked={multi} onChange={setMulti} ariaLabel="Permitir varias opciones" />
+          </div>
         )}
 
         <button onClick={submit} disabled={!name.trim() || busy}
@@ -136,11 +135,10 @@ export function ColumnOptionsEditor({ column, onClose, updateColumn, deleteColum
         </div>
 
         {selectable && (
-          <label className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-ios-sm surface-2 cursor-pointer">
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-ios-sm surface-2">
             <span className="text-sm font-medium">Permitir varias opciones por tarea</span>
-            <input type="checkbox" checked={multi} onChange={e => setMulti(e.target.checked)}
-              className="w-4 h-4 rounded accent-brand" />
-          </label>
+            <Checkbox checked={multi} onChange={setMulti} ariaLabel="Permitir varias opciones" />
+          </div>
         )}
 
         {selectable && (

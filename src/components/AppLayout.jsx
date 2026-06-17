@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Home, CircleCheck, Bell, CircleUser, Plus, PanelLeftClose, PanelLeftOpen,
@@ -151,17 +151,36 @@ function Sidebar() {
   const { theme, toggle } = useTheme()
   const { workspaces, reorderWorkspaces } = useWorkspaces()
   const { unreadCount } = useNotifications()
+  const listRef = useRef(null)
   const [dragId, setDragId] = useState(null)
-  const [overId, setOverId] = useState(null)
+  const [dropIndex, setDropIndex] = useState(null)
 
-  const onDrop = (targetId) => {
-    const ids = workspaces.map(w => w.id)
-    const from = ids.indexOf(dragId)
-    const to = ids.indexOf(targetId)
-    setDragId(null); setOverId(null)
-    if (from < 0 || to < 0 || from === to) return
-    ids.splice(to, 0, ids.splice(from, 1)[0])
-    reorderWorkspaces(ids)
+  const computeDropIndex = (clientY) => {
+    const rows = listRef.current ? [...listRef.current.querySelectorAll('[data-ws-row]')] : []
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i].getBoundingClientRect()
+      if (clientY < r.top + r.height / 2) return i
+    }
+    return rows.length
+  }
+
+  const onListDragOver = (e) => {
+    if (!dragId) return
+    e.preventDefault()
+    setDropIndex(computeDropIndex(e.clientY))
+  }
+
+  const onDrop = () => {
+    if (dragId != null && dropIndex != null) {
+      const ids = workspaces.map(w => w.id)
+      const from = ids.indexOf(dragId)
+      let to = dropIndex
+      ids.splice(from, 1)
+      if (from < to) to -= 1
+      ids.splice(to, 0, dragId)
+      if (ids.join() !== workspaces.map(w => w.id).join()) reorderWorkspaces(ids)
+    }
+    setDragId(null); setDropIndex(null)
   }
 
   return (
@@ -214,18 +233,22 @@ function Sidebar() {
           </div>
         )}
         {!collapsed && <SidebarSearch workspaces={workspaces} />}
-        <div className="flex flex-col gap-1">
-          {workspaces.map(ws => (
-            <div key={ws.id}
-              draggable
-              onDragStart={(e) => { setDragId(ws.id); e.dataTransfer.effectAllowed = 'move' }}
-              onDragOver={(e) => { e.preventDefault(); if (dragId && ws.id !== overId) setOverId(ws.id) }}
-              onDrop={() => onDrop(ws.id)}
-              onDragEnd={() => { setDragId(null); setOverId(null) }}
-              className={`rounded-ios-sm transition-opacity ${dragId === ws.id ? 'opacity-40' : ''} ${overId === ws.id && dragId && dragId !== ws.id ? 'ring-2 ring-brand-light' : ''}`}>
-              <WorkspaceNavItem ws={ws} collapsed={collapsed} />
-            </div>
-          ))}
+        <div ref={listRef} className="flex flex-col gap-1" onDragOver={onListDragOver} onDrop={onDrop}>
+          {workspaces.flatMap((ws, i) => {
+            const nodes = []
+            if (dragId && dropIndex === i) nodes.push(<div key={`ind-${i}`} className="h-0.5 bg-brand dark:bg-brand-light rounded-full mx-2 my-0.5" />)
+            nodes.push(
+              <div key={ws.id} data-ws-row
+                draggable
+                onDragStart={(e) => { setDragId(ws.id); e.dataTransfer.effectAllowed = 'move' }}
+                onDragEnd={() => { setDragId(null); setDropIndex(null) }}
+                className={`rounded-ios-sm transition-opacity ${dragId === ws.id ? 'opacity-40' : ''}`}>
+                <WorkspaceNavItem ws={ws} collapsed={collapsed} />
+              </div>
+            )
+            return nodes
+          })}
+          {dragId && dropIndex === workspaces.length && <div key="ind-end" className="h-0.5 bg-brand dark:bg-brand-light rounded-full mx-2 my-0.5" />}
         </div>
       </div>
 
