@@ -10,6 +10,14 @@ function escapeHtml(s) {
 
 export function renderRich(text, mentionNames = []) {
   let s = escapeHtml(text)
+  // Enlaces clicables (antes que el resto, sobre texto ya escapado)
+  s = s.replace(/\b(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi, (m) => {
+    let url = m, trail = ''
+    const tm = url.match(/[.,!?;:)\]]+$/)
+    if (tm) { trail = tm[0]; url = url.slice(0, -trail.length) }
+    const href = url.startsWith('http') ? url : 'https://' + url
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="rt-link">${url}</a>${trail}`
+  })
   s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
   s = s.replace(/~~([^~\n]+)~~/g, '<del>$1</del>')
   // cursiva con _ , evitando partir palabras con guion bajo interno

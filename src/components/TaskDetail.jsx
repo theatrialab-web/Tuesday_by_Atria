@@ -211,6 +211,22 @@ function Comments({ task, boardId, members }) {
     requestAnimationFrame(() => { editRef.current?.focus(); editRef.current?.setSelectionRange(s, e) })
   }
 
+  // Atajos: Cmd/Ctrl+B negrita, Cmd/Ctrl+I cursiva, Cmd/Ctrl+Shift+X tachado
+  const handleShortcut = (e, ref, apply) => {
+    const mod = e.metaKey || e.ctrlKey
+    if (!mod) return false
+    const k = e.key.toLowerCase()
+    let marker = null
+    if (k === 'b' && !e.shiftKey) marker = '**'
+    else if (k === 'i' && !e.shiftKey) marker = '_'
+    else if ((k === 'x' || k === 's') && e.shiftKey) marker = '~~'
+    if (!marker || !ref.current) return false
+    e.preventDefault()
+    const { next, selStart, selEnd } = wrapSelection(ref.current, marker)
+    apply(next, selStart, selEnd)
+    return true
+  }
+
   const suggestions = mentionQuery !== null
     ? members.filter(m => (m.full_name || m.email || '').toLowerCase().includes(mentionQuery)).slice(0, 5)
     : []
@@ -249,7 +265,8 @@ function Comments({ task, boardId, members }) {
                       <FormatToolbar targetRef={editRef} onApply={applyToEdit} />
                       <textarea ref={editRef} value={editDraft} rows={2}
                         onChange={onEditDraftChange}
-                        className="w-full bg-transparent text-sm resize-none mt-1.5" />
+                        onKeyDown={e => handleShortcut(e, editRef, applyToEdit)}
+                        className="w-full bg-transparent text-sm resize-y min-h-[44px] max-h-72 mt-1.5" />
                     </div>
                   </div>
                   <div className="flex gap-2 mt-1.5">
@@ -290,9 +307,12 @@ function Comments({ task, boardId, members }) {
           <FormatToolbar targetRef={inputRef} onApply={applyToDraft} />
           <div className="flex items-end gap-2 mt-1.5">
             <textarea ref={inputRef} value={draft} onChange={onDraftChange} rows={1}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-              placeholder="Comentar… (@ menciona, **negrita**, _cursiva_)"
-              className="flex-1 bg-transparent text-sm resize-none placeholder:text-2 max-h-28" />
+              onKeyDown={e => {
+                if (handleShortcut(e, inputRef, applyToDraft)) return
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
+              }}
+              placeholder="Comentar… (@ menciona · Cmd/Ctrl+B, I, ⇧X)"
+              className="flex-1 bg-transparent text-sm resize-y placeholder:text-2 min-h-[36px] max-h-72" />
             <button onClick={send} disabled={!draft.trim()} aria-label="Enviar comentario"
               className="p-1.5 rounded-full bg-brand text-white disabled:opacity-30">
               <Send size={14} />
