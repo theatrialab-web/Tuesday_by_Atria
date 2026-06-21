@@ -66,7 +66,7 @@ export function NotificationToaster({ onOpenTask }) {
     <div className="fixed right-3 bottom-20 sm:bottom-4 z-[90] flex flex-col gap-2 w-[320px] max-w-[calc(100vw-1.5rem)]">
       {toasts.map(n => (
         <div key={n.id} role="status"
-          className="surface border hairline rounded-ios shadow-2xl p-3 flex items-start gap-3 anim-pop">
+          className="glass-strong border hairline rounded-ios p-3 flex items-start gap-3 anim-pop">
           <Avatar profile={n.actor} size={34} />
           <button onClick={() => {
               dismiss(n.id)

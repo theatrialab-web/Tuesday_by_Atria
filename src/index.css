@@ -4,25 +4,35 @@
 @tailwind utilities;
 
 :root {
-  --bg: #F7F7FA;
+  --bg: #ECEBF2;
   --surface: #FFFFFF;
-  --surface-2: #F0F0F5;
-  --text: #111118;
-  --text-2: #6B6B76;
-  --border: rgba(0,0,0,0.07);
+  --surface-2: #F1F0F7;
+  --text: #14131C;
+  --text-2: #6B6B79;
+  --border: rgba(20,18,40,0.06);
+  --shadow-card: 0 1px 1px rgba(20,18,40,0.04), 0 6px 16px -10px rgba(20,18,40,0.14);
+  --shadow-float: 0 2px 6px rgba(20,18,40,0.08), 0 18px 48px -16px rgba(20,18,40,0.28);
+  --glass: rgba(255,255,255,0.72);
+  --glass-strong: rgba(255,255,255,0.82);
 }
 .dark {
-  --bg: #0E0E13;
-  --surface: #1A1A22;
-  --surface-2: #24242E;
+  --bg: #0C0C11;
+  --surface: #17171F;
+  --surface-2: #20202A;
   --text: #F2F2F7;
   --text-2: #9A9AA6;
-  --border: rgba(255,255,255,0.09);
+  --border: rgba(255,255,255,0.08);
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 8px 22px -14px rgba(0,0,0,0.55);
+  --shadow-float: 0 2px 8px rgba(0,0,0,0.4), 0 22px 54px -18px rgba(0,0,0,0.7);
+  --glass: rgba(26,26,34,0.7);
+  --glass-strong: rgba(22,22,30,0.82);
 }
 
 html, body, #root { height: 100%; }
 body {
   background: var(--bg);
+  background-image: radial-gradient(120% 80% at 50% -10%, rgba(67,24,201,0.05), transparent 60%);
+  background-attachment: fixed;
   color: var(--text);
   font-family: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
@@ -85,6 +95,36 @@ h1, h2, h3, h4 {
 .surface-2 { background: var(--surface-2); }
 .text-2 { color: var(--text-2); }
 .hairline { border-color: var(--border); }
+
+/* Vidrio esmerilado estilo iOS/macOS para elementos que flotan sobre el contenido */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-color: var(--border);
+}
+.glass-strong {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  border-color: var(--border);
+  box-shadow: var(--shadow-float);
+}
+/* Si el navegador no soporta backdrop-filter, caemos a superficie opaca */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass, .glass-strong { background: var(--surface); }
+}
+
+/* Tarjetas/paneles (superficie + borde) sin sombra propia reciben una suave */
+.surface.hairline:not([class*="shadow"]) { box-shadow: var(--shadow-card); }
+
+/* Tarjetas con tinte (mismos morado/verde/ámbar de la marca) */
+.tint-brand { background: linear-gradient(155deg, #ECE7FB 0%, #F8F5FE 100%); }
+.tint-green { background: linear-gradient(155deg, #E1F7EA 0%, #F2FBF6 100%); }
+.tint-amber { background: linear-gradient(155deg, #FCEFDA 0%, #FEF8EE 100%); }
+.dark .tint-brand { background: linear-gradient(155deg, #221746 0%, #15102E 100%); }
+.dark .tint-green { background: linear-gradient(155deg, #143021 0%, #0E2118 100%); }
+.dark .tint-amber { background: linear-gradient(155deg, #34250F 0%, #20170B 100%); }
 
 ::-webkit-scrollbar { height: 8px; width: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }

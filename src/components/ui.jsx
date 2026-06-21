@@ -41,7 +41,7 @@ export function Modal({ open, onClose, title, children, wide = false }) {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm anim-fade" onClick={onClose} />
       <div
-        className={`relative surface w-full sm:w-auto sm:min-w-[400px] ${wide ? 'sm:max-w-3xl' : 'sm:max-w-md'} max-h-[92dvh] overflow-y-auto rounded-t-ios sm:rounded-ios shadow-2xl anim-sheet sm:anim-pop`}
+        className={`relative glass-strong w-full sm:w-auto sm:min-w-[400px] ${wide ? 'sm:max-w-3xl' : 'sm:max-w-md'} max-h-[92dvh] overflow-y-auto rounded-t-ios-lg sm:rounded-ios border hairline anim-sheet sm:anim-pop`}
         role="dialog" aria-modal="true"
       >
         <div className="sticky top-0 surface z-10 flex items-center justify-between px-5 pt-4 pb-3 border-b hairline">
@@ -101,7 +101,7 @@ export function OptionSheet({ open, onClose, title, options, value, onSelect, al
   return createPortal(
     <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/30 anim-fade" onClick={(e) => { e.stopPropagation(); onClose() }} />
-      <div className="relative surface w-full sm:w-72 rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]" onClick={e => e.stopPropagation()}>
+      <div className="relative glass-strong border hairline w-full sm:w-72 rounded-t-ios-lg sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]" onClick={e => e.stopPropagation()}>
         <p className="text-sm font-semibold mb-3">{title}</p>
         <div className="flex flex-col gap-1.5">
           {options.map(opt => (
@@ -153,7 +153,7 @@ export function WorkspaceDropdown({ workspaces, value, onChange, placeholder = '
       {open && createPortal(
         <div className="fixed inset-0 z-[85] flex items-end sm:items-center justify-center" onClick={e => e.stopPropagation()}>
           <div className="absolute inset-0 bg-black/30 anim-fade" onClick={() => setOpen(false)} />
-          <div className="relative surface w-full sm:w-80 rounded-t-ios sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="relative glass-strong border hairline w-full sm:w-80 rounded-t-ios-lg sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
             <p className="text-sm font-semibold mb-3">{title}</p>
             <div className="flex flex-col gap-1.5">
               {allowAll && (

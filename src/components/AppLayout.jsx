@@ -184,7 +184,7 @@ function Sidebar() {
   }
 
   return (
-    <aside className={`hidden md:flex flex-col surface border-r hairline transition-all ${collapsed ? 'w-[68px]' : 'w-64'} shrink-0 h-dvh sticky top-0`}>
+    <aside className={`hidden md:flex flex-col glass border-r hairline transition-all ${collapsed ? 'w-[68px]' : 'w-64'} shrink-0 h-dvh sticky top-0`}>
       <div className="flex items-center justify-between p-3">
         {!collapsed && <Brand logoHeight={15} className="px-1" />}
         <button onClick={() => setCollapsed(c => !c)} aria-label="Colapsar menú"
@@ -280,7 +280,7 @@ function BottomNav({ onCreate }) {
   const sheetLink = ({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-ios-sm text-sm font-medium ${isActive ? 'bg-brand-soft dark:bg-brand-softDark text-brand dark:text-white' : 'surface-2'}`
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 surface border-t hairline flex items-stretch pb-[env(safe-area-inset-bottom)]">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 glass border-t hairline flex items-stretch pb-[env(safe-area-inset-bottom)]">
         <NavLink to="/" end className={active}><Home size={21} />Inicio</NavLink>
         <NavLink to="/mis-tareas" className={active}><CircleCheck size={21} />Tareas</NavLink>
         <button onClick={onCreate} aria-label="Crear"

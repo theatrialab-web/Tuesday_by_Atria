@@ -36,7 +36,7 @@ export function PomodoroWidget() {
     <>
       <button onClick={() => setOpen(o => !o)} aria-label="Temporizador de enfoque"
         className={`fixed z-[80] right-4 bottom-24 sm:bottom-6 active:scale-95 transition-transform ${p.running ? 'animate-[pulse_2.5s_ease-in-out_infinite]' : ''}`}>
-        <div className="rounded-full surface shadow-2xl border hairline p-1.5">
+        <div className="rounded-full glass-strong border hairline p-1.5">
           <Ring progress={p.progress} size={54} color={color}>
             {p.running
               ? <span className="text-[11px] font-bold tabular-nums" style={{ color }}>{fmt(p.secondsLeft)}</span>
@@ -46,7 +46,7 @@ export function PomodoroWidget() {
       </button>
 
       {open && createPortal(
-        <div className="fixed z-[81] right-4 bottom-40 sm:bottom-24 w-72 surface rounded-ios shadow-2xl border hairline p-4 anim-pop">
+        <div className="fixed z-[81] right-4 bottom-40 sm:bottom-24 w-72 glass-strong rounded-ios border hairline p-4 anim-pop">
           <div className="flex items-center justify-between mb-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-full"
               style={{ color, backgroundColor: color + '1f' }}>
