@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { PomodoroProvider } from './contexts/PomodoroContext'
+import { PomodoroWidget } from './components/PomodoroWidget'
 import AppLayout from './components/AppLayout'
 import Login from './pages/Login'
 import Home from './pages/Home'
@@ -10,6 +12,7 @@ import MisTareas from './pages/MisTareas'
 import Calendario from './pages/Calendario'
 import Reuniones from './pages/Reuniones'
 import Cobros from './pages/Cobros'
+import Enfoque from './pages/Enfoque'
 import Notificaciones from './pages/Notificaciones'
 import Perfil from './pages/Perfil'
 
@@ -26,20 +29,24 @@ function Protected() {
   if (!session) return <Login />
 
   return (
-    <AppLayout>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/mis-tareas" element={<MisTareas />} />
-        <Route path="/calendario" element={<Calendario />} />
-        <Route path="/reuniones" element={<Reuniones />} />
-        <Route path="/cobros" element={<Cobros />} />
-        <Route path="/notificaciones" element={<Notificaciones />} />
-        <Route path="/perfil" element={<Perfil />} />
-        <Route path="/workspace/:id" element={<Workspace />} />
-        <Route path="/board/:id" element={<Board />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AppLayout>
+    <PomodoroProvider>
+      <AppLayout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/mis-tareas" element={<MisTareas />} />
+          <Route path="/calendario" element={<Calendario />} />
+          <Route path="/reuniones" element={<Reuniones />} />
+          <Route path="/cobros" element={<Cobros />} />
+          <Route path="/enfoque" element={<Enfoque />} />
+          <Route path="/notificaciones" element={<Notificaciones />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/workspace/:id" element={<Workspace />} />
+          <Route path="/board/:id" element={<Board />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AppLayout>
+      <PomodoroWidget />
+    </PomodoroProvider>
   )
 }
 

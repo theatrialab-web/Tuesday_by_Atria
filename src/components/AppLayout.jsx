@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Home, CircleCheck, Bell, CircleUser, Plus, PanelLeftClose, PanelLeftOpen,
-  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard, Video, LayoutGrid, GripVertical,
+  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard, Video, LayoutGrid, GripVertical, Brain,
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -209,6 +209,9 @@ function Sidebar() {
         <NavLink to="/cobros" className={({ isActive }) => navItemCls(isActive)}>
           <CreditCard size={18} strokeWidth={1.75} className="shrink-0" />{!collapsed && 'Cobros'}
         </NavLink>
+        <NavLink to="/enfoque" className={({ isActive }) => navItemCls(isActive)}>
+          <Brain size={18} strokeWidth={1.75} className="shrink-0" />{!collapsed && 'Enfoque'}
+        </NavLink>
         <NavLink to="/notificaciones" className={({ isActive }) => navItemCls(isActive)}>
           <span className="relative shrink-0">
             <Bell size={18} />
@@ -310,6 +313,7 @@ function BottomNav({ onCreate }) {
               <NavLink to="/calendario" onClick={() => setMoreOpen(false)} className={sheetLink}><CalendarDays size={18} /> Calendario</NavLink>
               <NavLink to="/reuniones" onClick={() => setMoreOpen(false)} className={sheetLink}><Video size={18} /> Reuniones</NavLink>
               <NavLink to="/cobros" onClick={() => setMoreOpen(false)} className={sheetLink}><CreditCard size={18} /> Cobros</NavLink>
+              <NavLink to="/enfoque" onClick={() => setMoreOpen(false)} className={sheetLink}><Brain size={18} /> Enfoque</NavLink>
             </div>
           </div>
         </div>
