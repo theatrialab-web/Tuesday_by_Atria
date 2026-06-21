@@ -8,12 +8,12 @@ export function useActivity(limit = 100) {
   const [loading, setLoading] = useState(true)
 
   const fetchAll = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('activity')
-      .select('*, actor:profiles!activity_actor_id_fkey(id, full_name, avatar_url), workspace:workspaces(id, name, color, icon), task:tasks(title)')
+      .select('*, actor:profiles!actor_id(id, full_name, avatar_url), workspace:workspaces(id, name, color, icon)')
       .order('created_at', { ascending: false })
       .limit(limit)
-    setItems(data || [])
+    if (!error) setItems(data || [])
     setLoading(false)
   }, [limit])
 

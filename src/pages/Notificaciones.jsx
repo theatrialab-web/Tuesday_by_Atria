@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, UserPlus, AtSign, RefreshCw, CheckCheck, Activity, Plus, Check, RotateCcw, Pencil, MessageSquare, SlidersHorizontal } from 'lucide-react'
 import { useNotifications } from '../hooks/useMyTasks'
@@ -32,12 +32,14 @@ function timeAgo(iso) {
 
 export default function Notificaciones() {
   const { notifications, unreadCount, loading, markRead, markAllRead } = useNotifications()
-  const { items: activity, loading: actLoading } = useActivity()
+  const { items: activity, loading: actLoading, refetch: refetchActivity } = useActivity()
   const { workspaces } = useWorkspaces()
   const navigate = useNavigate()
   const [tab, setTab] = useState('mine')
   const [wsFilter, setWsFilter] = useState('all')
   const [quick, setQuick] = useState(null)
+
+  useEffect(() => { if (tab === 'team') refetchActivity() }, [tab])
 
   const openNotif = (n) => {
     if (!n.read) markRead(n.id)
