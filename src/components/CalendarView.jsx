@@ -40,7 +40,7 @@ function DayCell({ day, events, statusCol, values, onOpen, onAddToDay }) {
       } ${isOver ? 'bg-brand-soft dark:bg-brand-softDark' : 'hover:surface-2'}`}>
       <div className="flex items-center justify-between mb-1">
         <span className={`text-[11px] font-semibold w-5 h-5 flex items-center justify-center rounded-full ${
-          day.isToday ? 'bg-brand text-white' : 'text-2'
+          day.isToday ? 'btn-brand' : 'text-2'
         }`}>{day.date.getDate()}</span>
         <Plus size={12} className="text-2 opacity-0 group-hover:opacity-100" />
       </div>
@@ -70,7 +70,7 @@ function MobileCalendar({ weeks, eventsByDate, statusCol, values, selected, setS
           return (
             <button key={day.dateStr} onClick={() => setSelected(day.dateStr)}
               className={`aspect-square rounded-lg flex flex-col items-center justify-center gap-0.5 ${
-                isSel ? 'bg-brand text-white' : day.isToday ? 'surface-2' : ''
+                isSel ? 'btn-brand' : day.isToday ? 'surface-2' : ''
               } ${day.inMonth ? '' : 'opacity-30'}`}>
               <span className={`text-xs ${day.isToday && !isSel ? 'font-semibold text-brand dark:text-brand-light' : ''}`}>
                 {day.date.getDate()}

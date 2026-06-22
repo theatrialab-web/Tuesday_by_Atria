@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CreditCard, AlertCircle, CheckCircle2, Download, TrendingUp } from 'lucide-react'
 import { useAllBilling } from '../hooks/useBilling'
-import { WorkspaceIcon, WorkspaceDropdown } from '../components/ui'
+import { WorkspaceIcon, WorkspaceDropdown, Segmented } from '../components/ui'
 import { money } from '../components/BillingView'
 import { fromDateStr } from '../lib/calendar'
 
@@ -99,7 +99,7 @@ export default function Cobros() {
     return (
       <button onClick={() => navigate(`/workspace/${r.workspace_id}`)}
         className="w-full flex items-center gap-3 px-4 py-3 border-b hairline last:border-0 text-left hover:surface-2">
-        <WorkspaceIcon icon={ws?.icon} color={ws?.color} size={34} />
+        <WorkspaceIcon icon={ws?.icon} color={ws?.color} size={34} round />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{ws?.name || 'Cliente'}</p>
           <p className="text-[11px] text-2 capitalize">
@@ -157,13 +157,9 @@ export default function Cobros() {
             <div className="w-full sm:w-64">
               <WorkspaceDropdown workspaces={wsOptions} value={wsFilter} onChange={setWsFilter} allowAll title="Filtrar por cliente" />
             </div>
-            <div className="flex surface-2 rounded-full p-1 gap-0.5">
-              {[['all', 'Todos'], ['pending', 'Pendientes'], ['paid', 'Pagados']].map(([k, label]) => (
-                <button key={k} onClick={() => setStatusFilter(k)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold ${statusFilter === k ? 'bg-brand text-white' : 'text-2'}`}>
-                  {label}
-                </button>
-              ))}
+            <div className="w-full sm:w-auto sm:min-w-[260px]">
+              <Segmented value={statusFilter} onChange={setStatusFilter}
+                options={[{ value: 'all', label: 'Todos' }, { value: 'pending', label: 'Pendientes' }, { value: 'paid', label: 'Pagados' }]} />
             </div>
           </div>
 

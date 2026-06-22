@@ -96,7 +96,7 @@ function MultiOptionSheet({ open, onClose, title, options, selected, onToggle, o
           })}
           {options.length === 0 && <p className="text-xs text-2 px-1 py-1">Sin opciones. Usa "Editar opciones".</p>}
         </div>
-        <button onClick={onClose} className="mt-3 w-full py-2.5 rounded-ios-sm bg-brand text-white text-sm font-semibold">Listo</button>
+        <button onClick={onClose} className="mt-3 w-full py-2.5 rounded-ios-sm btn-brand text-sm font-semibold">Listo</button>
         {onEdit && (
           <button onClick={() => { onClose(); onEdit() }}
             className="w-full mt-2 px-3 py-2 rounded-ios-sm text-sm font-medium text-brand dark:text-brand-light">

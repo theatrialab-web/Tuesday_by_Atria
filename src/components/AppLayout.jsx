@@ -57,7 +57,7 @@ function SidebarSearch({ workspaces }) {
               {results.ws.map(w => (
                 <button key={w.id} onClick={() => go(`/workspace/${w.id}`)}
                   className="w-full flex items-center gap-2 px-2 py-1.5 rounded-ios-sm text-sm hover:surface-2 text-left">
-                  <WorkspaceIcon icon={w.icon} color={w.color} size={22} />
+                  <WorkspaceIcon icon={w.icon} color={w.color} size={22} round />
                   <span className="truncate">{w.name}</span>
                 </button>
               ))}
@@ -123,7 +123,7 @@ function WorkspaceNavItem({ ws, collapsed }) {
   if (collapsed) {
     return (
       <NavLink to={`/workspace/${ws.id}`} className={({ isActive }) => navItemCls(isActive)}>
-        <WorkspaceIcon icon={ws.icon} color={ws.color} size={24} />
+        <WorkspaceIcon icon={ws.icon} color={ws.color} size={24} round />
       </NavLink>
     )
   }
@@ -132,7 +132,7 @@ function WorkspaceNavItem({ ws, collapsed }) {
       <div className="flex items-center group/ws">
         <GripVertical size={14} className="shrink-0 text-2 opacity-0 group-hover/ws:opacity-100 cursor-grab active:cursor-grabbing -mr-1" />
         <NavLink to={`/workspace/${ws.id}`} className={({ isActive }) => navItemCls(isActive) + ' flex-1 min-w-0'}>
-          <WorkspaceIcon icon={ws.icon} color={ws.color} size={24} />
+          <WorkspaceIcon icon={ws.icon} color={ws.color} size={24} round />
           <span className="truncate">{ws.name}</span>
         </NavLink>
         <button onClick={() => setOpen(o => !o)} aria-label="Mostrar boards"
@@ -285,7 +285,7 @@ function BottomNav({ onCreate }) {
         <NavLink to="/mis-tareas" className={active}><CircleCheck size={21} />Tareas</NavLink>
         <button onClick={onCreate} aria-label="Crear"
           className="flex items-center justify-center w-14 -mt-4 mx-1">
-          <span className="w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform">
+          <span className="w-12 h-12 rounded-full btn-brand flex items-center justify-center shadow-lg active:scale-95 transition-transform">
             <Plus size={24} />
           </span>
         </button>

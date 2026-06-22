@@ -52,7 +52,7 @@ export function MonthCalendar({ eventsByDate = {}, onEventClick, onDayClick, isM
               <button key={day.dateStr} onClick={() => setSelected(day.dateStr)}
                 style={{ aspectRatio: '1 / 1' }}
                 className={`rounded-lg flex flex-col items-center justify-center gap-0.5 ${
-                  isSel ? 'bg-brand text-white' : day.isToday ? 'surface-2' : ''
+                  isSel ? 'btn-brand' : day.isToday ? 'surface-2' : ''
                 } ${day.inMonth ? '' : 'opacity-30'}`}>
                 <span className={`text-xs ${day.isToday && !isSel ? 'font-semibold text-brand dark:text-brand-light' : ''}`}>
                   {day.date.getDate()}
@@ -86,7 +86,7 @@ export function MonthCalendar({ eventsByDate = {}, onEventClick, onDayClick, isM
           </div>
           {onDayClick && (
             <button onClick={() => onDayClick(selected)}
-              className="mt-3 w-full py-2.5 rounded-ios-sm bg-brand text-white text-sm font-semibold active:scale-[.98] transition-transform">
+              className="mt-3 w-full py-2.5 rounded-ios-sm btn-brand text-sm font-semibold active:scale-[.98] transition-transform">
               + Agregar tarea este día
             </button>
           )}
@@ -112,7 +112,7 @@ export function MonthCalendar({ eventsByDate = {}, onEventClick, onDayClick, isM
                   onClick={() => onDayClick?.(day.dateStr)}
                   className={`min-h-[110px] p-1.5 border-r border-b hairline flex flex-col group/day ${onDayClick ? 'cursor-pointer hover:bg-brand-soft/40 dark:hover:bg-brand-softDark/40' : ''} ${day.inMonth ? '' : 'opacity-40'}`}>
                   <span className={`text-[11px] font-semibold w-5 h-5 flex items-center justify-center rounded-full mb-1 ${
-                    day.isToday ? 'bg-brand text-white' : 'text-2'
+                    day.isToday ? 'btn-brand' : 'text-2'
                   }`}>{day.date.getDate()}</span>
                   <div className="flex-1 overflow-hidden">
                     {evs.map(ev => (

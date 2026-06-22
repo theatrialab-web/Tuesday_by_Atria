@@ -15,7 +15,7 @@ export function MeetingRow({ m, ws, onEdit, onDelete }) {
   const past = new Date(m.starts_at).getTime() + (m.duration_min || 30) * 60000 < Date.now()
   return (
     <div className="flex items-center gap-3 px-4 py-3 border-b hairline last:border-0">
-      {ws ? <WorkspaceIcon icon={ws.icon} color={ws.color} size={34} />
+      {ws ? <WorkspaceIcon icon={ws.icon} color={ws.color} size={34} round />
         : <span className={`w-9 h-9 rounded-ios-sm grid place-items-center shrink-0 ${past ? 'surface-2 text-2' : 'bg-brand-soft dark:bg-brand-softDark text-brand dark:text-white'}`}><Video size={16} /></span>}
       <div className="flex-1 min-w-0">
         <p className={`text-sm font-medium truncate ${past ? 'text-2' : ''}`}>{m.title}</p>
@@ -25,7 +25,7 @@ export function MeetingRow({ m, ws, onEdit, onDelete }) {
       </div>
       {m.link && (
         <a href={m.link} target="_blank" rel="noreferrer"
-          className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-ios-sm shrink-0 ${past ? 'surface-2 text-2' : 'bg-brand text-white'}`}>
+          className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-ios-sm shrink-0 ${past ? 'surface-2 text-2' : 'btn-brand'}`}>
           Unirse <ExternalLink size={12} />
         </a>
       )}
@@ -53,7 +53,7 @@ export function MeetingsView({ workspaceId }) {
   return (
     <div className="max-w-3xl flex flex-col gap-5">
       <button onClick={() => setModal({ meeting: null })}
-        className="flex items-center gap-1.5 px-3.5 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold w-fit active:scale-95 transition-transform">
+        className="flex items-center gap-1.5 px-3.5 py-2 rounded-ios-sm btn-brand text-sm font-semibold w-fit active:scale-95 transition-transform">
         <Plus size={15} /> Agendar reunión
       </button>
 

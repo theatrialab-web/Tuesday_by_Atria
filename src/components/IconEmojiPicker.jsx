@@ -25,7 +25,7 @@ export function IconEmojiGrid({ value, onPick }) {
 
   const tabBtn = (key, label) =>
     <button type="button" onClick={() => setTab(key)}
-      className={`flex-1 text-xs font-semibold py-1.5 rounded-ios-sm ${tab === key ? 'bg-brand text-white' : 'surface-2 text-2'}`}>
+      className={`flex-1 text-xs font-semibold py-1.5 rounded-ios-sm ${tab === key ? 'btn-brand' : 'surface-2 text-2'}`}>
       {label}
     </button>
 
@@ -78,7 +78,7 @@ export function IconPickerModal({ open, onClose, title = 'Editar icono', value, 
         {withColor && <ColorRow value={col} onPick={setCol} />}
         <IconEmojiGrid value={icon} onPick={setIcon} />
         <button onClick={save} disabled={busy}
-          className="w-full py-3 rounded-ios-sm bg-brand text-white font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
+          className="w-full py-3 rounded-ios-sm btn-brand font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
           {busy ? 'Guardando…' : 'Guardar'}
         </button>
       </div>

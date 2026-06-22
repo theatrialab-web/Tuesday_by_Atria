@@ -109,15 +109,15 @@ export default function Board() {
         </div>
         <div className="flex surface-2 rounded-full p-1 gap-0.5">
           <button onClick={() => setView('table')} aria-label="Vista tabla"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${view === 'table' ? 'bg-brand text-white' : 'text-2'}`}>
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${view === 'table' ? 'btn-brand' : 'text-2'}`}>
             <Table2 size={13} /> <span className="hidden sm:inline">Tabla</span>
           </button>
           <button onClick={() => setView('kanban')} aria-label="Vista kanban"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${view === 'kanban' ? 'bg-brand text-white' : 'text-2'}`}>
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${view === 'kanban' ? 'btn-brand' : 'text-2'}`}>
             <KanbanIcon size={13} /> <span className="hidden sm:inline">Kanban</span>
           </button>
           <button onClick={() => setView('calendar')} aria-label="Vista calendario"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${view === 'calendar' ? 'bg-brand text-white' : 'text-2'}`}>
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${view === 'calendar' ? 'btn-brand' : 'text-2'}`}>
             <CalendarDays size={13} /> <span className="hidden sm:inline">Calendario</span>
           </button>
         </div>

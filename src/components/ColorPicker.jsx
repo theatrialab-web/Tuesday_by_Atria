@@ -98,7 +98,7 @@ function ColorPopover({ value, onChange, onClose }) {
         </div>
 
         <button onClick={onClose}
-          className="w-full mt-3 py-2.5 rounded-ios-sm bg-brand text-white text-sm font-semibold">Listo</button>
+          className="w-full mt-3 py-2.5 rounded-ios-sm btn-brand text-sm font-semibold">Listo</button>
       </div>
     </div>,
     document.body

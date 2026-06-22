@@ -32,7 +32,7 @@ export default function Reuniones() {
           </div>
         </div>
         <button onClick={() => setModal({ meeting: null })}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold shrink-0 active:scale-95 transition-transform">
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-ios-sm btn-brand text-sm font-semibold shrink-0 active:scale-95 transition-transform">
           <Plus size={15} /> Agendar
         </button>
       </div>

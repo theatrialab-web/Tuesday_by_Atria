@@ -270,7 +270,7 @@ function Comments({ task, boardId, members }) {
                     </div>
                   </div>
                   <div className="flex gap-2 mt-1.5">
-                    <button onClick={() => saveEdit(c)} className="text-xs font-semibold px-3 py-1.5 rounded-ios-sm bg-brand text-white">Guardar</button>
+                    <button onClick={() => saveEdit(c)} className="text-xs font-semibold px-3 py-1.5 rounded-ios-sm btn-brand">Guardar</button>
                     <button onClick={() => setEditingId(null)} className="text-xs px-3 py-1.5 rounded-ios-sm surface-2 text-2">Cancelar</button>
                   </div>
                 </div>
@@ -314,7 +314,7 @@ function Comments({ task, boardId, members }) {
               placeholder="Comentar… (@ menciona · Cmd/Ctrl+B, I, ⇧X)"
               className="flex-1 bg-transparent text-sm resize-y placeholder:text-2 min-h-[36px] max-h-72" />
             <button onClick={send} disabled={!draft.trim()} aria-label="Enviar comentario"
-              className="p-1.5 rounded-full bg-brand text-white disabled:opacity-30">
+              className="p-1.5 rounded-full btn-brand disabled:opacity-30">
               <Send size={14} />
             </button>
           </div>

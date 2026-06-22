@@ -34,7 +34,7 @@ function MiniCalendar({ value, onPick, onClear }) {
             <button key={day.dateStr} onClick={() => onPick(day.dateStr)}
               style={{ aspectRatio: '1 / 1' }}
               className={`rounded-lg text-sm flex items-center justify-center transition-colors ${
-                isSel ? 'bg-brand text-white font-semibold'
+                isSel ? 'btn-brand font-semibold'
                 : isToday ? 'ring-1 ring-brand-light text-brand dark:text-brand-light font-semibold'
                 : 'hover:surface-2'
               } ${day.inMonth ? '' : 'opacity-30'}`}>
@@ -78,17 +78,17 @@ export function TimeField({ value, onChange, className = '' }) {
               <div className="flex-1 overflow-y-auto rounded-ios-sm surface-2 p-1">
                 {hours.map(hh => (
                   <button key={hh} onClick={() => set(hh, m)}
-                    className={`w-full py-1.5 rounded-md text-sm font-medium ${h === hh ? 'bg-brand text-white' : 'hover:surface'}`}>{hh}</button>
+                    className={`w-full py-1.5 rounded-md text-sm font-medium ${h === hh ? 'btn-brand' : 'hover:surface'}`}>{hh}</button>
                 ))}
               </div>
               <div className="flex-1 overflow-y-auto rounded-ios-sm surface-2 p-1">
                 {mins.map(mm => (
                   <button key={mm} onClick={() => set(h, mm)}
-                    className={`w-full py-1.5 rounded-md text-sm font-medium ${m === mm ? 'bg-brand text-white' : 'hover:surface'}`}>{mm}</button>
+                    className={`w-full py-1.5 rounded-md text-sm font-medium ${m === mm ? 'btn-brand' : 'hover:surface'}`}>{mm}</button>
                 ))}
               </div>
             </div>
-            <button onClick={() => setOpen(false)} className="w-full mt-3 py-2.5 rounded-ios-sm bg-brand text-white text-sm font-semibold">Listo</button>
+            <button onClick={() => setOpen(false)} className="w-full mt-3 py-2.5 rounded-ios-sm btn-brand text-sm font-semibold">Listo</button>
           </div>
         </div>,
         document.body

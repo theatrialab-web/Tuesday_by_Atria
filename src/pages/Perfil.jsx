@@ -1,11 +1,21 @@
 import { useRef, useState } from 'react'
-import { Moon, Sun, LogOut, Camera, Bell, Volume2, VolumeX } from 'lucide-react'
+import { Moon, Sun, LogOut, Camera, Bell, Volume2, VolumeX, Sparkles, Image } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
-import { Avatar, Checkbox } from '../components/ui'
+import { Avatar, Switch } from '../components/ui'
 import { GlobalTeam } from '../components/GlobalTeam'
 import { supabase } from '../lib/supabase'
 import { notifSoundEnabled, setNotifSound, playNotificationSound } from '../lib/sound'
+import { glassEnabled, setGlass, bgValue, setBg } from '../lib/prefs'
+
+const BG_PRESETS = [
+  { id: '', label: 'Ninguno', css: '' },
+  { id: 'aurora', label: 'Aurora', css: 'linear-gradient(160deg,#5326D9 0%,#290880 55%,#120433 100%)' },
+  { id: 'sunset', label: 'Atardecer', css: 'linear-gradient(160deg,#FF9A8B 0%,#FF6A88 50%,#FF99AC 100%)' },
+  { id: 'ocean', label: 'Océano', css: 'linear-gradient(160deg,#2BC0E4 0%,#1A2980 100%)' },
+  { id: 'mint', label: 'Menta', css: 'linear-gradient(160deg,#00C875 0%,#0086C0 100%)' },
+  { id: 'graphite', label: 'Grafito', css: 'linear-gradient(160deg,#3A3A44 0%,#17171F 100%)' },
+]
 
 export default function Perfil() {
   const { profile, user, signOut, refreshProfile } = useAuth()
@@ -15,6 +25,28 @@ export default function Perfil() {
   const [error, setError] = useState(null)
   const [perm, setPerm] = useState(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported')
   const [sound, setSound] = useState(notifSoundEnabled())
+  const [glass, setGlassState] = useState(glassEnabled())
+  const [bg, setBgState] = useState(bgValue())
+  const bgFileRef = useRef(null)
+
+  const pickBg = (val) => { setBgState(val); setBg(val) }
+  const uploadBg = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setBusy(true); setError(null)
+    try {
+      const path = `backgrounds/${user.id}-${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`
+      const { error: upErr } = await supabase.storage.from('task-files').upload(path, file)
+      if (upErr) throw upErr
+      const url = supabase.storage.from('task-files').getPublicUrl(path).data.publicUrl
+      pickBg(url)
+    } catch (err) {
+      setError(err.message || 'No se pudo subir la imagen de fondo.')
+    } finally {
+      setBusy(false)
+      if (bgFileRef.current) bgFileRef.current.value = ''
+    }
+  }
 
   const enableNotifs = async () => {
     if (typeof Notification === 'undefined') return
@@ -66,7 +98,7 @@ export default function Perfil() {
           <Avatar profile={profile} size={84} />
           <button onClick={() => fileRef.current?.click()} disabled={busy}
             aria-label="Cambiar avatar"
-            className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center shadow-md border-2"
+            className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full btn-brand flex items-center justify-center shadow-md border-2"
             style={{ borderColor: 'var(--surface)' }}>
             <Camera size={15} />
           </button>
@@ -79,7 +111,7 @@ export default function Perfil() {
         {error && <p className="text-xs text-[#E2445C]">{error}</p>}
         <div className="flex items-center gap-2">
           <button onClick={() => fileRef.current?.click()} disabled={busy}
-            className="text-sm font-medium px-3.5 py-2 rounded-ios-sm bg-brand text-white disabled:opacity-50">
+            className="text-sm font-medium px-3.5 py-2 rounded-ios-sm btn-brand disabled:opacity-50">
             {busy ? 'Subiendo…' : 'Subir foto'}
           </button>
           {profile?.avatar_url && (
@@ -92,13 +124,13 @@ export default function Perfil() {
       </div>
 
       <div className="surface rounded-ios border hairline overflow-hidden mb-5">
-        <button onClick={toggle} className="w-full flex items-center justify-between px-4 py-3.5 border-b hairline">
+        <div className="w-full flex items-center justify-between px-4 py-3.5 border-b hairline">
           <span className="flex items-center gap-3 text-sm font-medium">
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-            Apariencia
+            Modo oscuro
           </span>
-          <span className="text-sm text-2">{theme === 'light' ? 'Claro' : 'Oscuro'}</span>
-        </button>
+          <Switch checked={theme === 'dark'} onChange={toggle} ariaLabel="Modo oscuro" />
+        </div>
         <button onClick={enableNotifs} disabled={perm === 'granted' || perm === 'unsupported'}
           className="w-full flex items-center justify-between px-4 py-3.5 text-left border-b hairline">
           <span className="flex items-center gap-3 text-sm font-medium">
@@ -112,13 +144,56 @@ export default function Perfil() {
               : 'Activar'}
           </span>
         </button>
-        <div className="w-full flex items-center justify-between px-4 py-3.5">
+        <div className="w-full flex items-center justify-between px-4 py-3.5 border-b hairline">
           <span className="flex items-center gap-3 text-sm font-medium">
             {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
             Sonido de notificaciones
           </span>
-          <Checkbox checked={sound} onChange={(v) => { setSound(v); setNotifSound(v); if (v) playNotificationSound() }} ariaLabel="Sonido de notificaciones" />
+          <Switch checked={sound} onChange={(v) => { setSound(v); setNotifSound(v); if (v) playNotificationSound() }} ariaLabel="Sonido de notificaciones" />
         </div>
+        <div className="w-full flex items-center justify-between px-4 py-3.5">
+          <span className="flex items-center gap-3 text-sm font-medium">
+            <Sparkles size={18} />
+            Efecto cristal (Liquid Glass)
+          </span>
+          <Switch checked={glass} onChange={(v) => { setGlassState(v); setGlass(v) }} ariaLabel="Efecto cristal" />
+        </div>
+      </div>
+
+      <div className="surface rounded-ios border hairline p-4 mb-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <Image size={18} />
+            <span className="text-sm font-medium">Fondo</span>
+          </div>
+          <button onClick={() => bgFileRef.current?.click()} disabled={busy}
+            className="text-xs font-medium px-3 py-1.5 rounded-full surface-2 text-2 disabled:opacity-50">
+            Subir imagen
+          </button>
+          <input ref={bgFileRef} type="file" accept="image/*" className="hidden" onChange={uploadBg} />
+        </div>
+        <div className="grid grid-cols-3 gap-2.5">
+          {BG_PRESETS.map(opt => {
+            const active = bg === opt.css
+            return (
+              <button key={opt.id} onClick={() => pickBg(opt.css)}
+                className={`relative h-16 rounded-ios-sm border overflow-hidden ${active ? 'ring-2 ring-brand-light border-transparent' : 'hairline'}`}
+                style={opt.css ? { backgroundImage: opt.css, backgroundSize: 'cover' } : { background: 'var(--surface-2)' }}>
+                <span className={`absolute bottom-1 left-0 right-0 text-center text-[10px] font-medium ${opt.css ? 'text-white drop-shadow' : 'text-2'}`}>
+                  {opt.label}
+                </span>
+              </button>
+            )
+          })}
+          {bg && /^https?:|^data:/.test(bg) && (
+            <button onClick={() => pickBg(bg)}
+              className="relative h-16 rounded-ios-sm overflow-hidden ring-2 ring-brand-light"
+              style={{ backgroundImage: `url("${bg}")`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+              <span className="absolute bottom-1 left-0 right-0 text-center text-[10px] font-medium text-white drop-shadow">Tu imagen</span>
+            </button>
+          )}
+        </div>
+        <p className="text-[11px] text-2 mt-2.5">Un fondo hace que el efecto cristal luzca mejor. Se guarda en este dispositivo.</p>
       </div>
       {perm === 'denied' && (
         <p className="text-xs text-2 -mt-3 mb-5 px-1">

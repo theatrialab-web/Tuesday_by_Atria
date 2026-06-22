@@ -86,7 +86,7 @@ export default function Home() {
               {workspaces.map(ws => (
                 <button key={ws.id} onClick={() => navigate(`/workspace/${ws.id}`)}
                   className="flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-full surface border hairline active:scale-95 transition-transform">
-                  <WorkspaceIcon icon={ws.icon} color={ws.color} size={28} />
+                  <WorkspaceIcon icon={ws.icon} color={ws.color} size={28} round />
                   <span className="text-sm font-medium max-w-[160px] truncate">{ws.name}</span>
                 </button>
               ))}

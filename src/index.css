@@ -4,7 +4,7 @@
 @tailwind utilities;
 
 :root {
-  --bg: #ECEBF2;
+  --bg: #F2F2F7;
   --surface: #FFFFFF;
   --surface-2: #F1F0F7;
   --text: #14131C;
@@ -12,8 +12,8 @@
   --border: rgba(20,18,40,0.06);
   --shadow-card: 0 1px 1px rgba(20,18,40,0.04), 0 6px 16px -10px rgba(20,18,40,0.14);
   --shadow-float: 0 2px 6px rgba(20,18,40,0.08), 0 18px 48px -16px rgba(20,18,40,0.28);
-  --glass: rgba(255,255,255,0.72);
-  --glass-strong: rgba(255,255,255,0.82);
+  --glass: rgba(243,241,252,0.72);
+  --glass-strong: rgba(246,244,253,0.82);
 }
 .dark {
   --bg: #0C0C11;
@@ -24,8 +24,8 @@
   --border: rgba(255,255,255,0.08);
   --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 8px 22px -14px rgba(0,0,0,0.55);
   --shadow-float: 0 2px 8px rgba(0,0,0,0.4), 0 22px 54px -18px rgba(0,0,0,0.7);
-  --glass: rgba(26,26,34,0.7);
-  --glass-strong: rgba(22,22,30,0.82);
+  --glass: rgba(28,24,46,0.72);
+  --glass-strong: rgba(24,20,40,0.84);
 }
 
 html, body, #root { height: 100%; }
@@ -99,21 +99,75 @@ h1, h2, h3, h4 {
 /* Vidrio esmerilado estilo iOS/macOS para elementos que flotan sobre el contenido */
 .glass {
   background: var(--glass);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(190%);
+  backdrop-filter: blur(22px) saturate(190%);
   border-color: var(--border);
 }
 .glass-strong {
   background: var(--glass-strong);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  backdrop-filter: blur(30px) saturate(180%);
-  border-color: var(--border);
-  box-shadow: var(--shadow-float);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255,255,255,0.55);
+  box-shadow: var(--shadow-float), inset 0 1px 0 rgba(255,255,255,0.65), inset 0 -1px 1px rgba(255,255,255,0.12);
 }
-/* Si el navegador no soporta backdrop-filter, caemos a superficie opaca */
+.dark .glass-strong {
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: var(--shadow-float), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 1px rgba(255,255,255,0.04);
+}
+/* Liquid Glass: cristal con reflejo especular (brillo superior + borde luminoso) */
+.liquid-glass {
+  position: relative;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: var(--shadow-float), 0 10px 34px -14px rgba(67,24,201,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.75), inset 0 0 0 1px rgba(67,24,201,0.05),
+    inset 0 -8px 18px -10px rgba(255,255,255,0.25);
+  overflow: hidden;
+}
+.liquid-glass::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(150deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.08) 38%, transparent 60%),
+    radial-gradient(120% 120% at 100% 100%, rgba(67,24,201,0.10), transparent 55%);
+  pointer-events: none;
+}
+.dark .liquid-glass {
+  border-color: rgba(160,130,255,0.18);
+  box-shadow: var(--shadow-float), 0 12px 40px -16px rgba(124,79,247,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.16);
+}
+.dark .liquid-glass::before {
+  background:
+    linear-gradient(150deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 40%, transparent 60%),
+    radial-gradient(120% 120% at 100% 100%, rgba(124,79,247,0.18), transparent 55%);
+}
+
+/* Botón de marca con acabado liquid glass */
+.btn-brand {
+  background: linear-gradient(140deg, #5326D9 0%, #3A12B8 55%, #290880 100%);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: 0 6px 18px -6px rgba(41,8,128,0.55), inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 6px -2px rgba(0,0,0,0.25);
+}
+.btn-brand:active { filter: brightness(0.96); }
+
+/* Si el navegador no soporta backdrop-filter, o el usuario lo desactiva, caemos a superficie opaca */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .glass, .glass-strong { background: var(--surface); }
+  .glass, .glass-strong, .liquid-glass { background: var(--surface); }
+  .liquid-glass::before { display: none; }
 }
+.glass-off .glass,
+.glass-off .glass-strong,
+.glass-off .liquid-glass {
+  background: var(--surface) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: var(--shadow-card) !important;
+}
+.glass-off .liquid-glass::before { display: none; }
 
 /* Tarjetas/paneles (superficie + borde) sin sombra propia reciben una suave */
 .surface.hairline:not([class*="shadow"]) { box-shadow: var(--shadow-card); }
@@ -133,13 +187,20 @@ h1, h2, h3, h4 {
 @keyframes pop-in { from { opacity: 0; transform: scale(.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes panel-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
-.anim-sheet { animation: sheet-up .28s cubic-bezier(.32,.72,.27,1); }
-.anim-pop { animation: pop-in .22s cubic-bezier(.32,.72,.27,1); }
-.anim-fade { animation: fade-in .18s ease; }
-.anim-panel { animation: panel-in .26s cubic-bezier(.32,.72,.27,1); }
+.anim-sheet { animation: sheet-up .42s cubic-bezier(.32,.72,.27,1); }
+.anim-pop { animation: pop-in .28s cubic-bezier(.32,1.3,.5,1); }
+.anim-fade { animation: fade-in .2s ease; }
+.anim-panel { animation: panel-in .4s cubic-bezier(.32,.72,.27,1); }
 @media (prefers-reduced-motion: reduce) {
   .anim-sheet, .anim-pop, .anim-fade, .anim-panel { animation: none; }
 }
+
+/* Feedback de pulsación tipo iOS: atenuación sutil (el escalado queda en botones que lo declaran) */
+button:not(:disabled) {
+  transition: transform .22s cubic-bezier(.34,1.4,.64,1), opacity .18s ease,
+    background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+button:not(:disabled):active { opacity: .6; transform: scale(.97); }
 
 input:focus-visible, button:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   outline: 2px solid #4318C9;

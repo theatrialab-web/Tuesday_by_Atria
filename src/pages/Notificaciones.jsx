@@ -4,7 +4,7 @@ import { Bell, UserPlus, AtSign, RefreshCw, CheckCheck, Activity, Plus, Check, R
 import { useNotifications } from '../hooks/useMyTasks'
 import { useActivity } from '../hooks/useActivity'
 import { useWorkspaces } from '../hooks/useWorkspaces'
-import { Avatar, WorkspaceIcon, WorkspaceDropdown } from '../components/ui'
+import { Avatar, WorkspaceIcon, WorkspaceDropdown, Segmented } from '../components/ui'
 import { TaskQuickView } from '../components/TaskQuickView'
 
 const TYPE_META = {
@@ -56,9 +56,6 @@ export default function Notificaciones() {
     () => wsFilter === 'all' ? activity : activity.filter(a => a.workspace_id === wsFilter),
     [activity, wsFilter])
 
-  const tabCls = (active) =>
-    `px-3.5 py-1.5 rounded-ios-sm text-sm font-medium transition-colors ${active ? 'bg-brand text-white' : 'surface-2 text-2 hover:text-1'}`
-
   return (
     <div className="p-5 sm:p-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-4">
@@ -71,13 +68,12 @@ export default function Notificaciones() {
         )}
       </div>
 
-      <div className="flex items-center gap-2 mb-5">
-        <button onClick={() => setTab('mine')} className={tabCls(tab === 'mine')}>
-          Mis notificaciones{unreadCount > 0 ? ` (${unreadCount})` : ''}
-        </button>
-        <button onClick={() => setTab('team')} className={tabCls(tab === 'team')}>
-          Actividad del equipo
-        </button>
+      <div className="mb-5 max-w-md">
+        <Segmented value={tab} onChange={setTab}
+          options={[
+            { value: 'mine', label: `Mis notificaciones${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
+            { value: 'team', label: 'Actividad del equipo' },
+          ]} />
       </div>
 
       {tab === 'mine' && (
@@ -152,7 +148,7 @@ export default function Notificaciones() {
                       </p>
                       <p className="text-[11px] text-2 flex items-center gap-1.5 mt-0.5">
                         {a.workspace && <span className="inline-flex items-center gap-1">
-                          <WorkspaceIcon icon={a.workspace.icon} color={a.workspace.color} size={14} />
+                          <WorkspaceIcon icon={a.workspace.icon} color={a.workspace.color} size={14} round />
                           {a.workspace.name}
                         </span>}
                         <span>· {timeAgo(a.created_at)}</span>

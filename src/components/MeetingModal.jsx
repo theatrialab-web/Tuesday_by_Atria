@@ -92,7 +92,7 @@ export function MeetingModal({ open, onClose, onCreate, onUpdate, meeting, works
           <div className="flex flex-wrap items-center gap-1.5">
             {[15, 30, 45, 60, 90, 120].map(d => (
               <button key={d} type="button" onClick={() => setDuration(d)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold ${Number(duration) === d ? 'bg-brand text-white' : 'surface-2 text-2'}`}>
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold ${Number(duration) === d ? 'btn-brand' : 'surface-2 text-2'}`}>
                 {d < 60 ? `${d} min` : d % 60 === 0 ? `${d / 60} h` : `${Math.floor(d / 60)} h ${d % 60} min`}
               </button>
             ))}
@@ -128,7 +128,7 @@ export function MeetingModal({ open, onClose, onCreate, onUpdate, meeting, works
 
         {error && <p className="text-xs text-[#E2445C]">{error}</p>}
         <button onClick={submit} disabled={!title.trim() || !date || busy}
-          className="w-full py-3 rounded-ios-sm bg-brand text-white font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
+          className="w-full py-3 rounded-ios-sm btn-brand font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
           {busy ? 'Guardando…' : (isEdit ? 'Guardar cambios' : 'Agendar reunión')}
         </button>
       </div>

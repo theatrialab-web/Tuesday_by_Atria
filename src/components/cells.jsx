@@ -41,7 +41,7 @@ export function PersonCell({ value, members, onChange, compact = false }) {
                 </button>
               )
             })}
-            <button onClick={() => setOpen(false)} className="mt-3 w-full py-2.5 rounded-ios-sm bg-brand text-white text-sm font-semibold">
+            <button onClick={() => setOpen(false)} className="mt-3 w-full py-2.5 rounded-ios-sm btn-brand text-sm font-semibold">
               Listo
             </button>
           </div>
@@ -102,7 +102,7 @@ export function TagCell({ value, onChange }) {
               className="w-full text-sm rounded-ios-sm surface-2 p-3 outline-none resize-y leading-relaxed max-h-[50dvh]" />
             <div className="flex items-center justify-end gap-2 mt-3">
               <button onClick={() => { setDraft(''); }} className="text-xs font-medium text-2 px-3 py-2">Limpiar</button>
-              <button onClick={save} className="px-4 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold">Guardar</button>
+              <button onClick={save} className="px-4 py-2 rounded-ios-sm btn-brand text-sm font-semibold">Guardar</button>
             </div>
           </div>
         </div>,

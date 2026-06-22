@@ -23,6 +23,46 @@ export function Checkbox({ checked, onChange, size = 18, green = false, classNam
   )
 }
 
+// Interruptor estilo iOS (verde, con rebote del knob)
+export function Switch({ checked, onChange, ariaLabel, disabled = false }) {
+  return (
+    <button type="button" role="switch" aria-checked={checked} aria-label={ariaLabel} disabled={disabled}
+      onClick={(e) => { e.stopPropagation(); if (!disabled) onChange(!checked) }}
+      className="relative inline-flex h-[31px] w-[51px] shrink-0 rounded-full transition-colors duration-300 disabled:opacity-50"
+      style={{ backgroundColor: checked ? '#34C759' : 'rgba(120,120,128,0.32)' }}>
+      <span className="absolute top-[2px] left-[2px] h-[27px] w-[27px] rounded-full bg-white"
+        style={{
+          transform: checked ? 'translateX(20px)' : 'translateX(0)',
+          transition: 'transform .3s cubic-bezier(.34,1.45,.64,1)',
+          boxShadow: '0 3px 8px rgba(0,0,0,0.18), 0 1px 1px rgba(0,0,0,0.12)',
+        }} />
+    </button>
+  )
+}
+
+// Control segmentado estilo iOS (pastilla blanca deslizante)
+export function Segmented({ options, value, onChange, className = '' }) {
+  const idx = Math.max(0, options.findIndex(o => o.value === value))
+  const n = options.length
+  return (
+    <div className={`relative inline-flex p-0.5 rounded-[11px] w-full ${className}`} style={{ background: 'rgba(120,120,128,0.16)' }}>
+      <span className="absolute top-0.5 bottom-0.5 rounded-[9px] surface"
+        style={{
+          width: `calc((100% - 4px) / ${n})`,
+          left: `calc(${idx} * (100% - 4px) / ${n} + 2px)`,
+          transition: 'left .32s cubic-bezier(.34,1.4,.64,1)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 1px rgba(0,0,0,0.04)',
+        }} />
+      {options.map(o => (
+        <button key={o.value} onClick={() => onChange(o.value)}
+          className={`relative z-10 flex-1 px-3 py-1.5 text-[13px] font-semibold rounded-[9px] transition-colors ${value === o.value ? '' : 'text-2'}`}>
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 // Modal centrado en desktop, bottom-sheet en móvil
 export function Modal({ open, onClose, title, children, wide = false }) {
   useEffect(() => {
@@ -41,7 +81,7 @@ export function Modal({ open, onClose, title, children, wide = false }) {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm anim-fade" onClick={onClose} />
       <div
-        className={`relative glass-strong w-full sm:w-auto sm:min-w-[400px] ${wide ? 'sm:max-w-3xl' : 'sm:max-w-md'} max-h-[92dvh] overflow-y-auto rounded-t-ios-lg sm:rounded-ios border hairline anim-sheet sm:anim-pop`}
+        className={`relative liquid-glass w-full sm:w-auto sm:min-w-[400px] ${wide ? 'sm:max-w-3xl' : 'sm:max-w-md'} max-h-[92dvh] overflow-y-auto rounded-t-ios-lg sm:rounded-ios border hairline anim-sheet sm:anim-pop`}
         role="dialog" aria-modal="true"
       >
         <div className="sticky top-0 surface z-10 flex items-center justify-between px-5 pt-4 pb-3 border-b hairline">
@@ -64,7 +104,7 @@ export function Avatar({ profile, size = 28 }) {
       className="rounded-full object-cover shrink-0" style={s} />
   }
   return (
-    <div className="rounded-full bg-brand text-white flex items-center justify-center font-semibold shrink-0" style={s}>
+    <div className="rounded-full btn-brand flex items-center justify-center font-semibold shrink-0" style={s}>
       {initials(profile?.full_name || profile?.email)}
     </div>
   )
@@ -101,7 +141,7 @@ export function OptionSheet({ open, onClose, title, options, value, onSelect, al
   return createPortal(
     <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/30 anim-fade" onClick={(e) => { e.stopPropagation(); onClose() }} />
-      <div className="relative glass-strong border hairline w-full sm:w-72 rounded-t-ios-lg sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]" onClick={e => e.stopPropagation()}>
+      <div className="relative liquid-glass border hairline w-full sm:w-72 rounded-t-ios-lg sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]" onClick={e => e.stopPropagation()}>
         <p className="text-sm font-semibold mb-3">{title}</p>
         <div className="flex flex-col gap-1.5">
           {options.map(opt => (
@@ -143,7 +183,7 @@ export function WorkspaceDropdown({ workspaces, value, onChange, placeholder = '
     <>
       <button type="button" onClick={() => setOpen(true)}
         className="w-full flex items-center gap-2.5 surface-2 rounded-ios-sm px-3 py-2.5 text-left">
-        {sel ? <WorkspaceIcon icon={sel.icon} color={sel.color} size={24} />
+        {sel ? <WorkspaceIcon icon={sel.icon} color={sel.color} size={24} round />
           : <span className="w-6 h-6 rounded-md surface grid place-items-center text-2 shrink-0"><Briefcase size={14} /></span>}
         <span className={`flex-1 min-w-0 truncate text-sm font-medium ${sel ? '' : 'text-2'}`}>
           {sel ? sel.name : isAll ? 'Todos los clientes' : placeholder}
@@ -153,7 +193,7 @@ export function WorkspaceDropdown({ workspaces, value, onChange, placeholder = '
       {open && createPortal(
         <div className="fixed inset-0 z-[85] flex items-end sm:items-center justify-center" onClick={e => e.stopPropagation()}>
           <div className="absolute inset-0 bg-black/30 anim-fade" onClick={() => setOpen(false)} />
-          <div className="relative glass-strong border hairline w-full sm:w-80 rounded-t-ios-lg sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="relative liquid-glass border hairline w-full sm:w-80 rounded-t-ios-lg sm:rounded-ios p-4 anim-sheet sm:anim-pop max-h-[75dvh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
             <p className="text-sm font-semibold mb-3">{title}</p>
             <div className="flex flex-col gap-1.5">
               {allowAll && (
@@ -166,7 +206,7 @@ export function WorkspaceDropdown({ workspaces, value, onChange, placeholder = '
               {workspaces.map(w => (
                 <button key={w.id} onClick={() => { onChange(w.id); setOpen(false) }}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-ios-sm text-left ${value === w.id ? 'bg-brand-soft dark:bg-brand-softDark ring-1 ring-brand-light' : 'surface-2'}`}>
-                  <WorkspaceIcon icon={w.icon} color={w.color} size={26} />
+                  <WorkspaceIcon icon={w.icon} color={w.color} size={26} round />
                   <span className="text-sm font-medium truncate flex-1 min-w-0">{w.name}</span>
                 </button>
               ))}
@@ -210,7 +250,7 @@ export function isEmojiIcon(icon) {
   return !!icon && !ICON_MAP[icon]
 }
 
-export function WorkspaceIcon({ icon, color, size = 36 }) {
+export function WorkspaceIcon({ icon, color, size = 36, round = false }) {
   const transparent = color === 'transparent'
   const bg = transparent ? 'transparent' : (color || '#E4E4E9')
   const emoji = isEmojiIcon(icon)
@@ -219,7 +259,7 @@ export function WorkspaceIcon({ icon, color, size = 36 }) {
     <div className="flex items-center justify-center shrink-0"
       style={{
         width: size, height: size,
-        borderRadius: Math.round(size * 0.42),
+        borderRadius: round ? size / 2 : Math.round(size * 0.42),
         backgroundColor: bg,
         color: readableFg(bg),
       }}>

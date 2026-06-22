@@ -54,7 +54,7 @@ export function GlobalTeam() {
           placeholder="correo@ejemplo.com" type="email"
           className="flex-1 min-w-0 text-sm rounded-ios-sm surface-2 px-3 py-2 outline-none" />
         <button onClick={invite} disabled={busy || !email.trim()}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold disabled:opacity-40">
+          className="flex items-center gap-1.5 px-3 py-2 rounded-ios-sm btn-brand text-sm font-semibold disabled:opacity-40">
           <UserPlus size={15} /> Invitar
         </button>
       </div>

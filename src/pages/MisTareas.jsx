@@ -78,7 +78,7 @@ export default function MisTareas() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <div className="flex surface-2 rounded-full p-1 gap-0.5">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand text-white">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold btn-brand">
               <List size={13} /> <span className="hidden sm:inline">Lista</span>
             </button>
             <button onClick={() => navigate('/calendario')}
@@ -87,7 +87,7 @@ export default function MisTareas() {
             </button>
           </div>
           <button onClick={() => setAddOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-ios-sm bg-brand text-white text-sm font-semibold active:scale-95 transition-transform">
+            className="flex items-center gap-1.5 px-3 py-2 rounded-ios-sm btn-brand text-sm font-semibold active:scale-95 transition-transform">
             <Plus size={15} /> <span className="hidden sm:inline">Tarea</span>
           </button>
         </div>

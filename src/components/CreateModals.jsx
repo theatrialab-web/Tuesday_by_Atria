@@ -31,7 +31,7 @@ export function CreateWorkspaceModal({ open, onClose, onCreated }) {
   return (
     <Modal open={open} onClose={onClose} title="Nuevo workspace">
       <div className="flex flex-col items-center gap-4">
-        <WorkspaceIcon icon={icon} color={color} size={72} />
+        <WorkspaceIcon icon={icon} color={color} size={72} round />
         <input autoFocus value={name} onChange={e => setName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && submit()}
           placeholder="Nombre del workspace"
@@ -42,7 +42,7 @@ export function CreateWorkspaceModal({ open, onClose, onCreated }) {
 
         {error && <p className="text-xs text-[#E2445C]">{error}</p>}
         <button onClick={submit} disabled={!name.trim() || busy}
-          className="w-full py-3 rounded-ios-sm bg-brand text-white font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
+          className="w-full py-3 rounded-ios-sm btn-brand font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
           {busy ? 'Creando…' : 'Crear workspace'}
         </button>
       </div>
@@ -89,7 +89,7 @@ export function CreateBoardModal({ open, onClose, onCreate }) {
         </p>
         {error && <p className="text-xs text-[#E2445C]">{error}</p>}
         <button onClick={submit} disabled={!name.trim() || busy}
-          className="w-full py-3 rounded-ios-sm bg-brand text-white font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
+          className="w-full py-3 rounded-ios-sm btn-brand font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
           {busy ? 'Creando…' : 'Crear board'}
         </button>
       </div>
@@ -138,7 +138,7 @@ export function MembersModal({ open, onClose, members, inviteByEmail, removeMemb
               type="email" placeholder="email@ejemplo.com" autoComplete="off"
               className="flex-1 px-3 py-2.5 rounded-ios-sm surface-2 text-sm placeholder:text-2" />
             <button onClick={() => doInvite()} disabled={!email.trim() || busy}
-              className="px-4 rounded-ios-sm bg-brand text-white text-sm font-semibold disabled:opacity-40">
+              className="px-4 rounded-ios-sm btn-brand text-sm font-semibold disabled:opacity-40">
               Invitar
             </button>
           </div>

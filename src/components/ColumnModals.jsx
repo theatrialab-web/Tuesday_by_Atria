@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Plus, Trash2, Type, Hash, Calendar, User, Tag, Flag, CircleDot } from 'lucide-react'
-import { Modal, Checkbox } from './ui'
+import { Modal, Switch } from './ui'
 import { WORKSPACE_COLORS, colOptions, colMulti, buildOptions } from '../lib/constants'
 
 const SELECT_TYPES = ['status', 'priority', 'tag']
@@ -62,12 +62,12 @@ export function AddColumnModal({ open, onClose, addColumn }) {
         {selectable && (
           <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-ios-sm surface-2">
             <span className="text-sm font-medium">Permitir varias opciones por tarea</span>
-            <Checkbox checked={multi} onChange={setMulti} ariaLabel="Permitir varias opciones" />
+            <Switch checked={multi} onChange={setMulti} ariaLabel="Permitir varias opciones" />
           </div>
         )}
 
         <button onClick={submit} disabled={!name.trim() || busy}
-          className="w-full py-3 rounded-ios-sm bg-brand text-white font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
+          className="w-full py-3 rounded-ios-sm btn-brand font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
           {busy ? 'Creando…' : 'Crear columna'}
         </button>
       </div>
@@ -137,7 +137,7 @@ export function ColumnOptionsEditor({ column, onClose, updateColumn, deleteColum
         {selectable && (
           <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-ios-sm surface-2">
             <span className="text-sm font-medium">Permitir varias opciones por tarea</span>
-            <Checkbox checked={multi} onChange={setMulti} ariaLabel="Permitir varias opciones" />
+            <Switch checked={multi} onChange={setMulti} ariaLabel="Permitir varias opciones" />
           </div>
         )}
 
@@ -170,7 +170,7 @@ export function ColumnOptionsEditor({ column, onClose, updateColumn, deleteColum
         )}
 
         <button onClick={save} disabled={busy}
-          className="w-full py-3 rounded-ios-sm bg-brand text-white font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
+          className="w-full py-3 rounded-ios-sm btn-brand font-semibold disabled:opacity-40 active:scale-[.98] transition-transform">
           {busy ? 'Guardando…' : 'Guardar'}
         </button>
         <button onClick={remove} disabled={busy}

@@ -5,6 +5,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { MonthCalendar } from '../components/MonthCalendar'
 import { AddTaskModal } from '../components/AddTaskModal'
 import { TaskQuickView } from '../components/TaskQuickView'
+import { Segmented } from '../components/ui'
 
 export default function Calendario() {
   const { eventsByDate: raw, loading, refetch } = useGlobalCalendar()
@@ -59,11 +60,9 @@ export default function Calendario() {
           <h1 className="text-2xl font-semibold leading-tight">Calendario</h1>
           <p className="text-sm text-2">Tus tareas con fecha y tus reuniones</p>
         </div>
-        <div className="flex surface-2 rounded-full p-1 gap-0.5">
-          <button onClick={() => setScope('all')}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold ${scope === 'all' ? 'bg-brand text-white' : 'text-2'}`}>Todo</button>
-          <button onClick={() => setScope('mine')}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold ${scope === 'mine' ? 'bg-brand text-white' : 'text-2'}`}>Solo lo mío</button>
+        <div className="w-44">
+          <Segmented value={scope} onChange={setScope}
+            options={[{ value: 'all', label: 'Todo' }, { value: 'mine', label: 'Solo mío' }]} />
         </div>
       </div>
       {loading ? (
