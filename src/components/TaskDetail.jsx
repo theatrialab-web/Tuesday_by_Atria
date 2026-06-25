@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Paperclip, Send, Trash2, FileText, Plus, PanelRightClose, Bold, Italic, Strikethrough, Pencil, ExternalLink, Maximize2 } from 'lucide-react'
+import { Paperclip, Send, Trash2, FileText, Plus, PanelRightClose, Bold, Italic, Strikethrough, Pencil, ExternalLink, Maximize2, Bell } from 'lucide-react'
 import { Modal, Avatar, Checkbox } from './ui'
+import { ReminderModal } from './ReminderModal'
+import { useReminders } from '../hooks/useReminders'
 import { renderRich, wrapSelection, insertAtCursor } from '../lib/richtext'
 import { EmojiPicker } from './EmojiPicker'
 import { CellValue } from './TableView'
@@ -412,7 +414,9 @@ function Files({ task, boardId }) {
 
 export function TaskDetail({ task, board, columns, values, members, subtasksOf, createTask, updateTask, deleteTask, setValue, onClose, onEditColumn, onOpenTask, isMobile = false, width = 460, onResize, linkToBoard = true }) {
   const navigate = useNavigate()
+  const { items: reminders, createReminder, deleteReminder } = useReminders()
   const [title, setTitle] = useState(task?.title || '')
+  const [reminderOpen, setReminderOpen] = useState(false)
   useEffect(() => { setTitle(task?.title || '') }, [task?.id])
 
   useEffect(() => {
@@ -439,6 +443,26 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
           onChange={e => setTitle(e.target.value)}
           onBlur={() => title.trim() && title !== task.title && updateTask(task.id, { title: title.trim() })}
           className="text-xl font-semibold bg-transparent w-full" aria-label="Título de la tarea" placeholder="Título de la tarea" />
+        <button onClick={() => setReminderOpen(true)}
+          className="self-start mt-1 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full surface-2 text-xs font-medium text-2 hover:text-1 active:scale-95 transition-transform">
+          <Bell size={13} /> Recordarme
+        </button>
+        {(() => {
+          const mine = reminders.filter(r => r.task_id === task.id && !r.fired)
+          if (mine.length === 0) return null
+          return (
+            <div className="mt-2 flex flex-col gap-1.5">
+              {mine.map(r => (
+                <div key={r.id} className="inline-flex items-center gap-2 self-start rounded-full bg-brand-soft dark:bg-brand-softDark text-brand dark:text-brand-light pl-2.5 pr-1.5 py-1 text-xs font-medium group">
+                  <Bell size={12} />
+                  <span>{new Date(r.remind_at).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                  <button onClick={() => deleteReminder(r.id)} aria-label="Quitar recordatorio"
+                    className="rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5"><Trash2 size={11} /></button>
+                </div>
+              ))}
+            </div>
+          )
+        })()}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
@@ -464,6 +488,9 @@ export function TaskDetail({ task, board, columns, values, members, subtasksOf, 
         className="self-start flex items-center gap-1.5 text-sm text-[#E2445C] font-medium">
         <Trash2 size={14} /> Eliminar tarea
       </button>
+
+      <ReminderModal open={reminderOpen} onClose={() => setReminderOpen(false)} defaultTitle={task.title}
+        onCreate={({ title: t, remindAt }) => createReminder({ title: t, remindAt, taskId: task.id, boardId: board.id })} />
     </div>
   )
 

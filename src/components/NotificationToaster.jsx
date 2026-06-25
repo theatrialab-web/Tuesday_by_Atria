@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { X } from 'lucide-react'
+import { X, Bell } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { Avatar } from './ui'
@@ -9,6 +9,7 @@ import { playNotificationSound } from '../lib/sound'
 
 function describe(n) {
   const t = n.content ? `"${n.content}"` : 'una tarea'
+  if (n.type === 'reminder') return n.content || 'Recordatorio'
   if (n.type === 'assigned') return `Te asignó a ${t}`
   if (n.type === 'status_changed') return `Actualizó el estado de ${t}`
   if (n.type === 'mentioned') return `Te mencionó en ${t}`
@@ -66,8 +67,10 @@ export function NotificationToaster({ onOpenTask }) {
     <div className="fixed right-3 bottom-20 sm:bottom-4 z-[90] flex flex-col gap-2 w-[320px] max-w-[calc(100vw-1.5rem)]">
       {toasts.map(n => (
         <div key={n.id} role="status"
-          className="liquid-glass border hairline rounded-ios p-3 flex items-start gap-3 anim-pop">
-          <Avatar profile={n.actor} size={34} />
+          className="glass-strong border hairline rounded-ios p-3 flex items-start gap-3 anim-pop">
+          {n.type === 'reminder'
+            ? <span className="w-[34px] h-[34px] rounded-full grid place-items-center shrink-0 bg-brand text-white"><Bell size={16} /></span>
+            : <Avatar profile={n.actor} size={34} />}
           <button onClick={() => {
               dismiss(n.id)
               if (n.task_id && n.board_id && onOpenTask) onOpenTask({ taskId: n.task_id, boardId: n.board_id })
@@ -75,8 +78,8 @@ export function NotificationToaster({ onOpenTask }) {
             }}
             className="flex-1 min-w-0 text-left">
             <p className="text-[13px] font-semibold truncate">
-              {n.actor?.full_name || 'Alguien'}
-              {n.board?.name && <span className="text-2 font-normal"> · {n.board.name}</span>}
+              {n.type === 'reminder' ? 'Recordatorio' : (n.actor?.full_name || 'Alguien')}
+              {n.type !== 'reminder' && n.board?.name && <span className="text-2 font-normal"> · {n.board.name}</span>}
             </p>
             <p className="text-xs text-2 line-clamp-2 mt-0.5">{describe(n)}</p>
           </button>

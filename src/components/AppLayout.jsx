@@ -10,6 +10,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useWorkspaces } from '../hooks/useWorkspaces'
 import { useBoards } from '../hooks/useBoards'
 import { useNotifications } from '../hooks/useMyTasks'
+import { useReminderChecker } from '../hooks/useReminders'
 import { Avatar, WorkspaceIcon, Brand, isEmojiIcon } from './ui'
 import { NotificationToaster } from './NotificationToaster'
 import { TaskQuickView } from './TaskQuickView'
@@ -327,6 +328,7 @@ export default function AppLayout({ children }) {
   const [quickTask, setQuickTask] = useState(null)
   const location = useLocation()
   const navigate = useNavigate()
+  useReminderChecker()
 
   useEffect(() => {
     const h = () => setCreateWs(true)

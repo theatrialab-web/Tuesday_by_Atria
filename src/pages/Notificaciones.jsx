@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, UserPlus, AtSign, RefreshCw, CheckCheck, Activity, Plus, Check, RotateCcw, Pencil, MessageSquare, SlidersHorizontal } from 'lucide-react'
+import { Bell, UserPlus, AtSign, RefreshCw, CheckCheck, Activity, Plus, Check, RotateCcw, Pencil, MessageSquare, SlidersHorizontal, Clock, Trash2 } from 'lucide-react'
 import { useNotifications } from '../hooks/useMyTasks'
 import { useActivity } from '../hooks/useActivity'
+import { useReminders } from '../hooks/useReminders'
 import { useWorkspaces } from '../hooks/useWorkspaces'
 import { Avatar, WorkspaceIcon, WorkspaceDropdown, Segmented } from '../components/ui'
+import { ReminderModal } from '../components/ReminderModal'
 import { TaskQuickView } from '../components/TaskQuickView'
 
 const TYPE_META = {
   assigned: { icon: UserPlus, color: '#0086C0', verb: 'te asignó a' },
   mentioned: { icon: AtSign, color: '#A25DDC', verb: 'te mencionó en' },
   status_changed: { icon: RefreshCw, color: '#FDAB3D', verb: 'cambió el estado de' },
+  reminder: { icon: Bell, color: '#4318C9', verb: '' },
 }
 
 const ACT_META = {
@@ -33,13 +36,19 @@ function timeAgo(iso) {
 export default function Notificaciones() {
   const { notifications, unreadCount, loading, markRead, markAllRead } = useNotifications()
   const { items: activity, loading: actLoading, refetch: refetchActivity } = useActivity()
+  const { items: reminders, loading: remLoading, createReminder, deleteReminder } = useReminders()
   const { workspaces } = useWorkspaces()
   const navigate = useNavigate()
   const [tab, setTab] = useState('mine')
   const [wsFilter, setWsFilter] = useState('all')
   const [quick, setQuick] = useState(null)
+  const [reminderOpen, setReminderOpen] = useState(false)
 
   useEffect(() => { if (tab === 'team') refetchActivity() }, [tab])
+
+  const fmtWhen = (iso) => new Date(iso).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+  const upcoming = reminders.filter(r => !r.fired)
+  const pastRem = reminders.filter(r => r.fired)
 
   const openNotif = (n) => {
     if (!n.read) markRead(n.id)
@@ -66,13 +75,20 @@ export default function Notificaciones() {
             <CheckCheck size={16} /> Marcar todas
           </button>
         )}
+        {tab === 'reminders' && (
+          <button onClick={() => setReminderOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-ios-sm bg-brand text-white text-sm font-medium active:scale-95 transition-transform">
+            <Plus size={15} /> Nuevo
+          </button>
+        )}
       </div>
 
-      <div className="mb-5 max-w-md">
+      <div className="mb-5 max-w-lg">
         <Segmented value={tab} onChange={setTab}
           options={[
-            { value: 'mine', label: `Mis notificaciones${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
-            { value: 'team', label: 'Actividad del equipo' },
+            { value: 'mine', label: `Notificaciones${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
+            { value: 'team', label: 'Actividad' },
+            { value: 'reminders', label: 'Recordatorios' },
           ]} />
       </div>
 
@@ -88,22 +104,31 @@ export default function Notificaciones() {
             {notifications.map(n => {
               const meta = TYPE_META[n.type] || TYPE_META.assigned
               const Icon = meta.icon
+              const isReminder = n.type === 'reminder'
               return (
                 <button key={n.id} onClick={() => openNotif(n)}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-left border-b hairline last:border-0 ${n.read ? '' : 'bg-brand-soft/50 dark:bg-brand-softDark/40'}`}>
                   <div className="relative">
-                    <Avatar profile={n.actor} size={36} />
-                    <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-white border-2"
-                      style={{ backgroundColor: meta.color, borderColor: 'var(--surface)' }}>
-                      <Icon size={9} />
-                    </span>
+                    {isReminder
+                      ? <span className="w-9 h-9 rounded-full grid place-items-center bg-brand text-white"><Bell size={16} /></span>
+                      : <>
+                          <Avatar profile={n.actor} size={36} />
+                          <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-white border-2"
+                            style={{ backgroundColor: meta.color, borderColor: 'var(--surface)' }}>
+                            <Icon size={9} />
+                          </span>
+                        </>}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm leading-snug">
-                      <span className="font-semibold">{n.actor?.full_name || 'Alguien'}</span>{' '}
-                      {meta.verb}{' '}
-                      <span className="font-medium">{n.content || 'una tarea'}</span>
-                    </p>
+                    {isReminder ? (
+                      <p className="text-sm leading-snug"><span className="font-semibold">Recordatorio:</span> {n.content}</p>
+                    ) : (
+                      <p className="text-sm leading-snug">
+                        <span className="font-semibold">{n.actor?.full_name || 'Alguien'}</span>{' '}
+                        {meta.verb}{' '}
+                        <span className="font-medium">{n.content || 'una tarea'}</span>
+                      </p>
+                    )}
                     <p className="text-[11px] text-2">{timeAgo(n.created_at)}</p>
                   </div>
                   {!n.read && <span className="w-2 h-2 rounded-full bg-brand shrink-0" />}
@@ -161,6 +186,58 @@ export default function Notificaciones() {
           )}
         </>
       )}
+
+      {tab === 'reminders' && (
+        remLoading ? <p className="text-sm text-2">Cargando…</p>
+        : reminders.length === 0 ? (
+          <div className="rounded-ios border-2 border-dashed hairline p-10 flex flex-col items-center gap-3 text-2 text-center">
+            <Clock size={28} />
+            <p className="text-sm">Sin recordatorios. Crea uno con «Nuevo» y te avisaremos a la hora.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5">
+            {upcoming.length > 0 && (
+              <section>
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-2 mb-2">Próximos</h2>
+                <div className="surface rounded-ios border hairline overflow-hidden">
+                  {upcoming.map(r => (
+                    <div key={r.id} className="flex items-center gap-3 px-4 py-3 border-b hairline last:border-0 group">
+                      <span className="w-9 h-9 rounded-full grid place-items-center bg-brand-soft dark:bg-brand-softDark text-brand dark:text-brand-light shrink-0"><Bell size={15} /></span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{r.title}</p>
+                        <p className="text-[11px] text-2 flex items-center gap-1"><Clock size={11} /> {fmtWhen(r.remind_at)}{r.task?.title ? ` · ${r.task.title}` : ''}</p>
+                      </div>
+                      <button onClick={() => deleteReminder(r.id)} aria-label="Eliminar recordatorio"
+                        className="sm:opacity-0 group-hover:opacity-100 text-2 hover:text-[#E2445C] shrink-0"><Trash2 size={15} /></button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {pastRem.length > 0 && (
+              <section>
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-2 mb-2">Pasados</h2>
+                <div className="surface rounded-ios border hairline overflow-hidden opacity-70">
+                  {pastRem.slice(0, 20).map(r => (
+                    <div key={r.id} className="flex items-center gap-3 px-4 py-3 border-b hairline last:border-0 group">
+                      <span className="w-9 h-9 rounded-full grid place-items-center surface-2 text-2 shrink-0"><Bell size={15} /></span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm truncate line-through">{r.title}</p>
+                        <p className="text-[11px] text-2">{fmtWhen(r.remind_at)}</p>
+                      </div>
+                      <button onClick={() => deleteReminder(r.id)} aria-label="Eliminar recordatorio"
+                        className="sm:opacity-0 group-hover:opacity-100 text-2 hover:text-[#E2445C] shrink-0"><Trash2 size={15} /></button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        )
+      )}
+
+      <ReminderModal open={reminderOpen} onClose={() => setReminderOpen(false)}
+        onCreate={(payload) => createReminder(payload)} />
 
       {quick && (
         <TaskQuickView taskId={quick.taskId} boardId={quick.boardId} onClose={() => setQuick(null)} />

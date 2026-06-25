@@ -8,7 +8,8 @@ import { useIsMobile } from '../hooks/useIsMobile'
 const WORK_COLOR = '#4318C9'
 const BREAK_COLOR = '#00C875'
 const BTN = 66        // tamaño aprox del boton (incluye padding)
-const POS_KEY = 'pomodoro-pos'
+const POS_KEY_MOBILE = 'pomodoro-pos-mobile'
+const POS_KEY_DESKTOP = 'pomodoro-pos-desktop'
 
 export function Ring({ progress, size = 56, stroke = 5, color = WORK_COLOR, track = 'rgba(120,120,140,0.18)', children }) {
   const r = (size - stroke) / 2
@@ -26,10 +27,11 @@ export function Ring({ progress, size = 56, stroke = 5, color = WORK_COLOR, trac
   )
 }
 
-function clampPos(x, y) {
+function clampPos(x, y, isMobile) {
   const w = window.innerWidth, h = window.innerHeight
+  const bottomGap = isMobile ? 88 : 16 // en movil deja sitio para la barra inferior
   const cx = Math.min(Math.max(8, x), w - BTN - 8)
-  const cy = Math.min(Math.max(70, y), h - BTN - 88) // deja sitio para la barra inferior
+  const cy = Math.min(Math.max(isMobile ? 70 : 8, y), h - BTN - bottomGap)
   return { x: cx, y: cy }
 }
 
@@ -41,37 +43,35 @@ export function PomodoroWidget() {
   const [pos, setPos] = useState(null)
   const drag = useRef({ on: false, moved: false, ox: 0, oy: 0, justDragged: false })
   const btnRef = useRef(null)
+  const posKey = isMobile ? POS_KEY_MOBILE : POS_KEY_DESKTOP
 
-  // Posicion inicial en movil (guardada o esquina inferior derecha)
+  // Posicion inicial (guardada o esquina inferior derecha), para movil y escritorio
   useEffect(() => {
-    if (!isMobile) return
     let saved = null
-    try { saved = JSON.parse(localStorage.getItem(POS_KEY)) } catch { /* noop */ }
+    try { saved = JSON.parse(localStorage.getItem(posKey)) } catch { /* noop */ }
+    const gap = isMobile ? 96 : 24
     setPos(clampPos(
-      saved?.x ?? (window.innerWidth - BTN - 16),
-      saved?.y ?? (window.innerHeight - BTN - 96)
+      saved?.x ?? (window.innerWidth - BTN - gap),
+      saved?.y ?? (window.innerHeight - BTN - gap),
+      isMobile
     ))
-  }, [isMobile])
+  }, [isMobile, posKey])
 
   // Reajustar si cambia el tamaño de la ventana
   useEffect(() => {
-    if (!isMobile) return
-    const onResize = () => setPos(pp => (pp ? clampPos(pp.x, pp.y) : pp))
+    const onResize = () => setPos(pp => (pp ? clampPos(pp.x, pp.y, isMobile) : pp))
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [isMobile])
 
   const onPointerDown = (e) => {
-    if (!isMobile) return
     const rect = btnRef.current.getBoundingClientRect()
     drag.current = { on: true, moved: false, ox: e.clientX - rect.left, oy: e.clientY - rect.top, justDragged: false }
     btnRef.current.setPointerCapture?.(e.pointerId)
   }
   const onPointerMove = (e) => {
     if (!drag.current.on) return
-    const nx = e.clientX - drag.current.ox
-    const ny = e.clientY - drag.current.oy
-    const next = clampPos(nx, ny)
+    const next = clampPos(e.clientX - drag.current.ox, e.clientY - drag.current.oy, isMobile)
     if (Math.abs(e.movementX) + Math.abs(e.movementY) > 0) drag.current.moved = true
     setPos(next)
   }
@@ -81,7 +81,7 @@ export function PomodoroWidget() {
     btnRef.current.releasePointerCapture?.(e.pointerId)
     if (drag.current.moved) {
       drag.current.justDragged = true
-      setPos(pp => { if (pp) localStorage.setItem(POS_KEY, JSON.stringify(pp)); return pp })
+      setPos(pp => { if (pp) localStorage.setItem(posKey, JSON.stringify(pp)); return pp })
     }
   }
 
@@ -94,15 +94,13 @@ export function PomodoroWidget() {
   const color = p.mode === 'work' ? WORK_COLOR : BREAK_COLOR
   const Icon = p.mode === 'work' ? Brain : Coffee
 
-  // Estilo/posicion del boton
-  const btnStyle = isMobile && pos ? { position: 'fixed', left: pos.x, top: pos.y } : undefined
-  const btnClass = isMobile
-    ? 'fixed z-[80] touch-none active:scale-95 transition-transform'
-    : `fixed z-[80] right-4 bottom-6 active:scale-95 transition-transform ${p.running ? 'animate-[pulse_2.5s_ease-in-out_infinite]' : ''}`
+  // Estilo/posicion del boton (controlado por estado en movil y escritorio)
+  const btnStyle = pos ? { position: 'fixed', left: pos.x, top: pos.y } : { position: 'fixed', right: 16, bottom: 24 }
+  const btnClass = `z-[80] touch-none active:scale-95 transition-transform ${p.running ? 'animate-[pulse_2.5s_ease-in-out_infinite]' : ''}`
 
-  // Posicion del panel en movil: encima o debajo del boton segun el espacio
-  let panelStyle
-  if (isMobile && pos) {
+  // Posicion del panel: encima o debajo del boton segun el espacio
+  let panelStyle = { position: 'fixed', right: 16, bottom: 96 }
+  if (pos) {
     const below = pos.y < window.innerHeight / 2
     const left = Math.min(Math.max(8, pos.x + BTN / 2 - 144), window.innerWidth - 288 - 8)
     panelStyle = below
@@ -126,7 +124,7 @@ export function PomodoroWidget() {
 
       {open && createPortal(
         <div className="w-72 glass-strong rounded-ios border hairline p-4 anim-pop z-[81]"
-          style={panelStyle || { position: 'fixed', right: 16, bottom: 96 }}>
+          style={panelStyle}>
           <div className="flex items-center justify-between mb-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-full"
               style={{ color, backgroundColor: color + '1f' }}>
