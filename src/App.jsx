@@ -13,6 +13,7 @@ import Calendario from './pages/Calendario'
 import Reuniones from './pages/Reuniones'
 import Cobros from './pages/Cobros'
 import Enfoque from './pages/Enfoque'
+import Crm from './pages/Crm'
 import Notificaciones from './pages/Notificaciones'
 import Perfil from './pages/Perfil'
 
@@ -38,6 +39,7 @@ function Protected() {
           <Route path="/reuniones" element={<Reuniones />} />
           <Route path="/cobros" element={<Cobros />} />
           <Route path="/enfoque" element={<Enfoque />} />
+          <Route path="/crm" element={<Crm />} />
           <Route path="/notificaciones" element={<Notificaciones />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/workspace/:id" element={<Workspace />} />

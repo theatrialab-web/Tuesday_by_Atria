@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Home, CircleCheck, Bell, CircleUser, Plus, PanelLeftClose, PanelLeftOpen,
-  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard, Video, LayoutGrid, GripVertical, Brain,
+  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard, Video, LayoutGrid, GripVertical, Brain, Handshake,
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -11,6 +11,7 @@ import { useWorkspaces } from '../hooks/useWorkspaces'
 import { useBoards } from '../hooks/useBoards'
 import { useNotifications } from '../hooks/useMyTasks'
 import { useReminderChecker } from '../hooks/useReminders'
+import { CommandPalette } from './CommandPalette'
 import { Avatar, WorkspaceIcon, Brand, isEmojiIcon } from './ui'
 import { NotificationToaster } from './NotificationToaster'
 import { TaskQuickView } from './TaskQuickView'
@@ -213,6 +214,9 @@ function Sidebar() {
         <NavLink to="/enfoque" className={({ isActive }) => navItemCls(isActive)}>
           <Brain size={18} strokeWidth={1.75} className="shrink-0" />{!collapsed && 'Enfoque'}
         </NavLink>
+        <NavLink to="/crm" className={({ isActive }) => navItemCls(isActive)}>
+          <Handshake size={18} strokeWidth={1.75} className="shrink-0" />{!collapsed && 'CRM'}
+        </NavLink>
         <NavLink to="/notificaciones" className={({ isActive }) => navItemCls(isActive)}>
           <span className="relative shrink-0">
             <Bell size={18} />
@@ -313,8 +317,10 @@ function BottomNav({ onCreate }) {
             <div className="flex flex-col gap-1.5">
               <NavLink to="/calendario" onClick={() => setMoreOpen(false)} className={sheetLink}><CalendarDays size={18} /> Calendario</NavLink>
               <NavLink to="/reuniones" onClick={() => setMoreOpen(false)} className={sheetLink}><Video size={18} /> Reuniones</NavLink>
+              <button onClick={() => { setMoreOpen(false); window.dispatchEvent(new CustomEvent('open-global-search')) }} className={sheetLink}><Search size={18} /> Buscar</button>
               <NavLink to="/cobros" onClick={() => setMoreOpen(false)} className={sheetLink}><CreditCard size={18} /> Cobros</NavLink>
               <NavLink to="/enfoque" onClick={() => setMoreOpen(false)} className={sheetLink}><Brain size={18} /> Enfoque</NavLink>
+              <NavLink to="/crm" onClick={() => setMoreOpen(false)} className={sheetLink}><Handshake size={18} /> CRM</NavLink>
             </div>
           </div>
         </div>
@@ -326,9 +332,21 @@ function BottomNav({ onCreate }) {
 export default function AppLayout({ children }) {
   const [createWs, setCreateWs] = useState(false)
   const [quickTask, setQuickTask] = useState(null)
+  const [searchOpen, setSearchOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   useReminderChecker()
+
+  // Ctrl+K / Cmd+K abre el buscador global
+  useEffect(() => {
+    const h = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(o => !o) }
+    }
+    window.addEventListener('keydown', h)
+    const open = () => setSearchOpen(true)
+    window.addEventListener('open-global-search', open)
+    return () => { window.removeEventListener('keydown', h); window.removeEventListener('open-global-search', open) }
+  }, [])
 
   useEffect(() => {
     const h = () => setCreateWs(true)
@@ -356,6 +374,7 @@ export default function AppLayout({ children }) {
       <main className="flex-1 min-w-0 pb-20 md:pb-0">{children}</main>
       <BottomNav onCreate={handleCreate} />
       <NotificationToaster onOpenTask={setQuickTask} />
+      <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} onOpenTask={setQuickTask} />
       {quickTask && (
         <TaskQuickView taskId={quickTask.taskId} boardId={quickTask.boardId}
           onClose={() => setQuickTask(null)} />

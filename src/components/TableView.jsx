@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronDown, ChevronRight, Plus, Trash2, Settings2, Pencil, Check, Maximize2, CornerDownRight } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Trash2, Settings2, Pencil, Check, Maximize2, CornerDownRight, GripVertical } from 'lucide-react'
 import { OptionPill, OptionSheet, Checkbox } from './ui'
 import { PersonCell, DateCell, TagCell } from './cells'
 import { formatDate, colOptions, colMulti } from '../lib/constants'
@@ -197,6 +197,42 @@ export function TableView({ board, columns, topTasks, subtasksOf, values, member
   const [expanded, setExpanded] = useState({})
   const [draft, setDraft] = useState('')
   const span = columns.length + 4
+  const [dragId, setDragId] = useState(null)
+  const [dropIndex, setDropIndex] = useState(null)
+  const armRef = useRef(null)   // solo se arrastra desde la manija
+  const bodyRef = useRef(null)
+
+  const computeDropIndex = (clientY) => {
+    const rows = bodyRef.current ? [...bodyRef.current.querySelectorAll('[data-task-row]')] : []
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i].getBoundingClientRect()
+      if (clientY < r.top + r.height / 2) return i
+    }
+    return rows.length
+  }
+
+  const onBodyDragOver = (e) => {
+    if (!dragId) return
+    e.preventDefault()
+    setDropIndex(computeDropIndex(e.clientY))
+  }
+
+  const onBodyDrop = () => {
+    if (dragId != null && dropIndex != null) {
+      const from = topTasks.findIndex(t => t.id === dragId)
+      if (from >= 0 && dropIndex !== from && dropIndex !== from + 1) {
+        const rest = topTasks.filter(t => t.id !== dragId)
+        const at = dropIndex > from ? dropIndex - 1 : dropIndex
+        const prev = rest[at - 1]
+        const next = rest[at]
+        const pos = prev && next ? (prev.position + next.position) / 2
+          : prev ? prev.position + 1
+          : next ? next.position - 1 : 1
+        updateTask(dragId, { position: pos })
+      }
+    }
+    setDragId(null); setDropIndex(null)
+  }
   const allSelected = topTasks.length > 0 && topTasks.every(t => selectedIds.includes(t.id))
 
   return (
@@ -228,20 +264,34 @@ export function TableView({ board, columns, topTasks, subtasksOf, values, member
             <th className="w-10" />
           </tr>
         </thead>
-        <tbody>
-          {topTasks.map(task => {
+        <tbody ref={bodyRef} onDragOver={onBodyDragOver} onDrop={onBodyDrop}>
+          {topTasks.map((task, ti) => {
             const subs = subtasksOf(task.id)
             const isOpen = !!expanded[task.id]
             const checked = selectedIds.includes(task.id)
             return (
               <FragmentRow key={task.id}>
-                <tr className={`border-b hairline hover:surface-2 cursor-pointer group ${checked ? 'bg-brand-soft/50 dark:bg-brand-softDark/40' : ''}`}
+                {dragId && dropIndex === ti && (
+                  <tr><td colSpan={span} className="p-0"><div className="h-0.5 bg-brand dark:bg-brand-light rounded-full mx-2" /></td></tr>
+                )}
+                <tr data-task-row draggable
+                  onDragStart={(e) => {
+                    if (armRef.current !== task.id) { e.preventDefault(); return }
+                    setDragId(task.id); e.dataTransfer.effectAllowed = 'move'
+                  }}
+                  onDragEnd={() => { armRef.current = null; setDragId(null); setDropIndex(null) }}
+                  className={`border-b hairline hover:surface-2 cursor-pointer group ${checked ? 'bg-brand-soft/50 dark:bg-brand-softDark/40' : ''} ${dragId === task.id ? 'opacity-40' : ''}`}
                   onClick={() => onOpenTask(task)}>
                   <td className="pl-3" onClick={e => e.stopPropagation()}>
                     <Checkbox checked={checked} onChange={() => onToggleSelect?.(task.id)} ariaLabel="Seleccionar tarea" />
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
+                      <span onMouseDown={() => { armRef.current = task.id }}
+                        onClick={e => e.stopPropagation()}
+                        className="opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing text-2 -ml-1 shrink-0">
+                        <GripVertical size={13} />
+                      </span>
                       <button aria-label="Subtareas"
                         onClick={(e) => { e.stopPropagation(); setExpanded(x => ({ ...x, [task.id]: !isOpen })) }}
                         className={`p-1 rounded text-2 hover:surface-2 ${subs.length ? '' : 'opacity-40'}`}>
@@ -280,6 +330,9 @@ export function TableView({ board, columns, topTasks, subtasksOf, values, member
               </FragmentRow>
             )
           })}
+          {dragId && dropIndex === topTasks.length && (
+            <tr><td colSpan={span} className="p-0"><div className="h-0.5 bg-brand dark:bg-brand-light rounded-full mx-2" /></td></tr>
+          )}
           <tr>
             <td colSpan={span} className="px-4 py-2.5">
               <div className="flex items-center gap-2 text-2">

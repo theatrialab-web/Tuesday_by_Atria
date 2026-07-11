@@ -213,7 +213,7 @@ function Comments({ task, boardId, members }) {
     requestAnimationFrame(() => { editRef.current?.focus(); editRef.current?.setSelectionRange(s, e) })
   }
 
-  // Atajos: Cmd/Ctrl+B negrita, Cmd/Ctrl+I cursiva, Cmd/Ctrl+Shift+X tachado
+  // Atajos: Cmd/Ctrl+B negrita, Cmd/Ctrl+I cursiva, Cmd/Ctrl+Shift+S (o X) tachado
   const handleShortcut = (e, ref, apply) => {
     const mod = e.metaKey || e.ctrlKey
     if (!mod) return false
@@ -224,9 +224,22 @@ function Comments({ task, boardId, members }) {
     else if ((k === 'x' || k === 's') && e.shiftKey) marker = '~~'
     if (!marker || !ref.current) return false
     e.preventDefault()
+    e.stopPropagation()
     const { next, selStart, selEnd } = wrapSelection(ref.current, marker)
     apply(next, selStart, selEnd)
     return true
+  }
+
+  // Vista previa en vivo del formato (solo si hay algo que renderizar distinto)
+  const hasRich = (t) => /\*\*|__|~~|_[^_]+_|https?:\/\/|www\.|@/.test(t)
+  const Preview = ({ text }) => {
+    if (!text?.trim() || !hasRich(text)) return null
+    return (
+      <div className="mt-1.5 pt-1.5 border-t hairline">
+        <p className="text-[10px] uppercase tracking-wide text-2 mb-0.5">Vista previa</p>
+        <p className="text-sm break-words" dangerouslySetInnerHTML={{ __html: renderRich(text, memberNames) }} />
+      </div>
+    )
   }
 
   const suggestions = mentionQuery !== null
@@ -269,6 +282,7 @@ function Comments({ task, boardId, members }) {
                         onChange={onEditDraftChange}
                         onKeyDown={e => handleShortcut(e, editRef, applyToEdit)}
                         className="w-full bg-transparent text-sm resize-y min-h-[44px] max-h-72 mt-1.5" />
+                      <Preview text={editDraft} />
                     </div>
                   </div>
                   <div className="flex gap-2 mt-1.5">
@@ -313,13 +327,14 @@ function Comments({ task, boardId, members }) {
                 if (handleShortcut(e, inputRef, applyToDraft)) return
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
               }}
-              placeholder="Comentar… (@ menciona · Cmd/Ctrl+B, I, ⇧X)"
+              placeholder="Comentar… (@ menciona · Ctrl+B, Ctrl+I, Ctrl+Shift+S tacha)"
               className="flex-1 bg-transparent text-sm resize-y placeholder:text-2 min-h-[36px] max-h-72" />
             <button onClick={send} disabled={!draft.trim()} aria-label="Enviar comentario"
               className="p-1.5 rounded-full btn-brand disabled:opacity-30">
               <Send size={14} />
             </button>
           </div>
+          <Preview text={draft} />
         </div>
       </div>
     </section>
