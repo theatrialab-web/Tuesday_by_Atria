@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckSquare, CalendarDays, List, Plus } from 'lucide-react'
+import { CheckSquare, CalendarDays, List, Plus, ChevronDown } from 'lucide-react'
 import { useMyTasks } from '../hooks/useMyTasks'
 import { OptionPill, OptionSheet } from '../components/ui'
 import { AddTaskModal } from '../components/AddTaskModal'
@@ -48,6 +48,14 @@ export default function MisTareas() {
   const navigate = useNavigate()
   const [addOpen, setAddOpen] = useState(false)
   const [quick, setQuick] = useState(null)
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('mytasks-collapsed')) || {} } catch { return {} }
+  })
+  const toggleGroup = (key) => setCollapsed(c => {
+    const next = { ...c, [key]: !c[key] }
+    try { localStorage.setItem('mytasks-collapsed', JSON.stringify(next)) } catch { /* noop */ }
+    return next
+  })
 
   useEffect(() => {
     const h = () => setAddOpen(true)
@@ -107,20 +115,25 @@ export default function MisTareas() {
           {GROUP_META.map(({ key, label, accent }) => {
             const list = grouped[key]
             if (!list.length) return null
+            const isCollapsed = !!collapsed[key]
             return (
               <section key={key}>
-                <div className="flex items-center gap-2 mb-2">
+                <button onClick={() => toggleGroup(key)}
+                  className="w-full flex items-center gap-2 mb-2 text-left">
+                  <ChevronDown size={15} className={`text-2 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: accent }} />
                   <h2 className="text-sm font-semibold">{label}</h2>
                   <span className="text-xs text-2">{list.length}</span>
-                </div>
-                <div className="surface rounded-ios border hairline overflow-hidden">
-                  {list.map(item => (
-                    <TaskRow key={item.task.id} item={item}
-                      onStatus={setStatus}
-                      onOpen={() => setQuick({ taskId: item.task.id, boardId: item.board.id })} />
-                  ))}
-                </div>
+                </button>
+                {!isCollapsed && (
+                  <div className="surface rounded-ios border hairline overflow-hidden anim-fade">
+                    {list.map(item => (
+                      <TaskRow key={item.task.id} item={item}
+                        onStatus={setStatus}
+                        onOpen={() => setQuick({ taskId: item.task.id, boardId: item.board.id })} />
+                    ))}
+                  </div>
+                )}
               </section>
             )
           })}
