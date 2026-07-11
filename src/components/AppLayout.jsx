@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Home, CircleCheck, Bell, CircleUser, Plus, PanelLeftClose, PanelLeftOpen,
-  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard, Video, LayoutGrid, GripVertical, Brain, Handshake,
+  Moon, Sun, LogOut, CalendarDays, ChevronRight, ChevronDown, Search, X, CircleDot, CreditCard, Video, LayoutGrid, GripVertical, Brain, Handshake, Menu,
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -279,48 +279,82 @@ function Sidebar() {
 
 function BottomNav({ onCreate }) {
   const { unreadCount } = useNotifications()
-  const [moreOpen, setMoreOpen] = useState(false)
   const item = 'flex flex-col items-center justify-center flex-1 py-1.5 text-[10px] gap-0.5'
   const active = ({ isActive }) => `${item} ${isActive ? 'text-brand dark:text-white' : 'text-2'}`
-  const sheetLink = ({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-ios-sm text-sm font-medium ${isActive ? 'bg-brand-soft dark:bg-brand-softDark text-brand dark:text-white' : 'surface-2'}`
+  return (
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 glass border-t hairline flex items-stretch pb-[env(safe-area-inset-bottom)]">
+      <NavLink to="/" end className={active}><Home size={21} />Inicio</NavLink>
+      <NavLink to="/mis-tareas" className={active}><CircleCheck size={21} />Tareas</NavLink>
+      <button onClick={onCreate} aria-label="Crear"
+        className="flex items-center justify-center w-14 -mt-4 mx-1">
+        <span className="w-12 h-12 rounded-full btn-brand flex items-center justify-center shadow-lg active:scale-95 transition-transform">
+          <Plus size={24} />
+        </span>
+      </button>
+      <NavLink to="/notificaciones" className={active}>
+        <span className="relative">
+          <Bell size={21} />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-0.5 rounded-full bg-[#E2445C] text-white text-[9px] font-semibold flex items-center justify-center">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </span>
+        Avisos
+      </NavLink>
+    </nav>
+  )
+}
+
+// Barra superior movil: marca + boton de menu que abre un panel lateral derecho
+function MobileTopBar() {
+  const [open, setOpen] = useState(false)
+  const { profile, signOut } = useAuth()
+  const { theme, toggle } = useTheme()
+  const link = ({ isActive }) => `flex items-center gap-3 px-3.5 py-3 rounded-ios-sm text-sm font-medium ${isActive ? 'bg-brand-soft dark:bg-brand-softDark text-brand dark:text-white' : ''}`
+
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 glass border-t hairline flex items-stretch pb-[env(safe-area-inset-bottom)]">
-        <NavLink to="/" end className={active}><Home size={21} />Inicio</NavLink>
-        <NavLink to="/mis-tareas" className={active}><CircleCheck size={21} />Tareas</NavLink>
-        <button onClick={onCreate} aria-label="Crear"
-          className="flex items-center justify-center w-14 -mt-4 mx-1">
-          <span className="w-12 h-12 rounded-full btn-brand flex items-center justify-center shadow-lg active:scale-95 transition-transform">
-            <Plus size={24} />
-          </span>
-        </button>
-        <NavLink to="/notificaciones" className={active}>
-          <span className="relative">
-            <Bell size={21} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-0.5 rounded-full bg-[#E2445C] text-white text-[9px] font-semibold flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </span>
-          Avisos
-        </NavLink>
-        <button onClick={() => setMoreOpen(true)} className={`${item} text-2`}><LayoutGrid size={21} />Más</button>
-        <NavLink to="/perfil" className={active}><CircleUser size={21} />Perfil</NavLink>
-      </nav>
+      <header className="md:hidden fixed top-0 inset-x-0 z-40 glass border-b hairline pt-[env(safe-area-inset-top)]">
+        <div className="h-12 flex items-center justify-between px-4">
+          <Brand logoHeight={15} />
+          <button onClick={() => setOpen(true)} aria-label="Menú"
+            className="p-2 -mr-2 rounded-full text-1 active:scale-90 transition-transform">
+            <Menu size={22} />
+          </button>
+        </div>
+      </header>
 
-      {moreOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex items-end" onClick={() => setMoreOpen(false)}>
-          <div className="absolute inset-0 bg-black/30 anim-fade" />
-          <div className="relative surface w-full rounded-t-ios p-4 anim-sheet shadow-2xl pb-[max(1.5rem,env(safe-area-inset-bottom))]" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full surface-2 mx-auto mb-4" />
-            <div className="flex flex-col gap-1.5">
-              <NavLink to="/calendario" onClick={() => setMoreOpen(false)} className={sheetLink}><CalendarDays size={18} /> Calendario</NavLink>
-              <NavLink to="/reuniones" onClick={() => setMoreOpen(false)} className={sheetLink}><Video size={18} /> Reuniones</NavLink>
-              <button onClick={() => { setMoreOpen(false); window.dispatchEvent(new CustomEvent('open-global-search')) }} className={sheetLink}><Search size={18} /> Buscar</button>
-              <NavLink to="/cobros" onClick={() => setMoreOpen(false)} className={sheetLink}><CreditCard size={18} /> Cobros</NavLink>
-              <NavLink to="/enfoque" onClick={() => setMoreOpen(false)} className={sheetLink}><Brain size={18} /> Enfoque</NavLink>
-              <NavLink to="/crm" onClick={() => setMoreOpen(false)} className={sheetLink}><Handshake size={18} /> CRM</NavLink>
+      {open && (
+        <div className="md:hidden fixed inset-0 z-[70]" onClick={() => setOpen(false)}>
+          <div className="absolute inset-0 bg-black/35 anim-fade" />
+          <div className="absolute right-0 top-0 h-full w-[280px] glass-strong border-l hairline anim-drawer flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3.5 border-b hairline">
+              <span className="text-sm font-semibold">Menú</span>
+              <button onClick={() => setOpen(false)} aria-label="Cerrar" className="p-1.5 rounded-full surface-2 text-2"><X size={15} /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2.5 flex flex-col gap-0.5">
+              <button onClick={() => { setOpen(false); window.dispatchEvent(new CustomEvent('open-global-search')) }}
+                className="flex items-center gap-3 px-3.5 py-3 rounded-ios-sm text-sm font-medium">
+                <Search size={18} /> Buscar
+              </button>
+              <NavLink to="/calendario" onClick={() => setOpen(false)} className={link}><CalendarDays size={18} /> Calendario</NavLink>
+              <NavLink to="/reuniones" onClick={() => setOpen(false)} className={link}><Video size={18} /> Reuniones</NavLink>
+              <NavLink to="/cobros" onClick={() => setOpen(false)} className={link}><CreditCard size={18} /> Cobros</NavLink>
+              <NavLink to="/enfoque" onClick={() => setOpen(false)} className={link}><Brain size={18} /> Enfoque</NavLink>
+              <NavLink to="/crm" onClick={() => setOpen(false)} className={link}><Handshake size={18} /> CRM</NavLink>
+              <div className="my-1.5 border-t hairline" />
+              <NavLink to="/perfil" onClick={() => setOpen(false)} className={link}>
+                <Avatar profile={profile} size={22} /> Perfil
+              </NavLink>
+              <button onClick={toggle} className="flex items-center gap-3 px-3.5 py-3 rounded-ios-sm text-sm font-medium">
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                {theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+              </button>
+              <button onClick={signOut} className="flex items-center gap-3 px-3.5 py-3 rounded-ios-sm text-sm font-medium text-[#E2445C]">
+                <LogOut size={18} /> Cerrar sesión
+              </button>
             </div>
           </div>
         </div>
@@ -371,7 +405,8 @@ export default function AppLayout({ children }) {
   return (
     <div className="flex min-h-dvh">
       <Sidebar />
-      <main className="flex-1 min-w-0 pb-20 md:pb-0">{children}</main>
+      <main className="flex-1 min-w-0 pb-20 pt-[calc(3rem+env(safe-area-inset-top))] md:pt-0 md:pb-0">{children}</main>
+      <MobileTopBar />
       <BottomNav onCreate={handleCreate} />
       <NotificationToaster onOpenTask={setQuickTask} />
       <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} onOpenTask={setQuickTask} />

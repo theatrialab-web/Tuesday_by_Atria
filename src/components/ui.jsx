@@ -81,7 +81,7 @@ export function Modal({ open, onClose, title, children, wide = false }) {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm anim-fade" onClick={onClose} />
       <div
-        className={`relative liquid-glass w-full sm:w-auto sm:min-w-[400px] ${wide ? 'sm:max-w-3xl' : 'sm:max-w-md'} max-h-[92dvh] overflow-y-auto rounded-t-ios-lg sm:rounded-ios border hairline anim-sheet sm:anim-pop`}
+        className={`relative liquid-glass w-full sm:w-auto sm:min-w-[400px] ${wide ? 'sm:max-w-3xl' : 'sm:max-w-md'} max-h-[92dvh] overflow-y-auto overscroll-contain rounded-t-ios-lg sm:rounded-ios border hairline anim-sheet sm:anim-pop`}
         role="dialog" aria-modal="true"
       >
         <div className="sticky top-0 surface z-10 flex items-center justify-between px-5 pt-4 pb-3 border-b hairline">

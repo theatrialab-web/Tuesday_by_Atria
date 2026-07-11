@@ -139,7 +139,10 @@ function ClientModal({ open, onClose, client, onSave, onDelete, workspaces, cont
 
       {err && <p className="text-xs text-[#E2445C] mt-3">{err}</p>}
 
-      <div className="flex items-center justify-between mt-5">
+      {!isNew && <Interactions clientId={client.id} />}
+
+      <div className="sticky bottom-0 z-10 -mx-5 px-5 py-3 mt-5 surface border-t hairline flex items-center justify-between"
+        style={{ marginBottom: 'calc(-1.25rem)' }}>
         {!isNew ? (
           <button onClick={onDelete} className="flex items-center gap-1.5 text-sm text-[#E2445C] font-medium">
             <Trash2 size={14} /> Eliminar
@@ -150,8 +153,6 @@ function ClientModal({ open, onClose, client, onSave, onDelete, workspaces, cont
           {isNew ? 'Crear cliente' : 'Guardar'}
         </button>
       </div>
-
-      {!isNew && <Interactions clientId={client.id} />}
     </Modal>
   )
 }

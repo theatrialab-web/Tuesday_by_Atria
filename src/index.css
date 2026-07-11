@@ -29,6 +29,11 @@
 }
 
 html, body, #root { height: 100%; }
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   background: var(--bg);
   background-image: radial-gradient(120% 80% at 50% -10%, rgba(67,24,201,0.05), transparent 60%);
@@ -206,3 +211,10 @@ input:focus-visible, button:focus-visible, textarea:focus-visible, [tabindex]:fo
   outline: 2px solid #4318C9;
   outline-offset: 2px;
 }
+
+/* Panel lateral (drawer) que entra desde la derecha */
+@keyframes drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.anim-drawer { animation: drawer-in .32s cubic-bezier(.32, .72, .35, 1); }
