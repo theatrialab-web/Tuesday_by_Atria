@@ -419,7 +419,7 @@ export default function AppLayout({ children }) {
   return (
     <div className="flex min-h-dvh">
       <Sidebar />
-      <main className="flex-1 min-w-0 pb-20 pt-[calc(3rem+env(safe-area-inset-top))] md:pt-0 md:pb-0">{children}</main>
+      <main className="flex-1 min-w-0 max-w-full overflow-x-clip pb-20 pt-[calc(3.5rem+env(safe-area-inset-top))] md:pt-0 md:pb-0">{children}</main>
       <MobileTopBar />
       <BottomNav onCreate={handleCreate} />
       <NotificationToaster onOpenTask={setQuickTask} />
