@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { Play, Pause, RotateCcw, SkipForward, Brain, Coffee, Maximize2, X } from 'lucide-react'
+import { Play, Pause, RotateCcw, SkipForward, Brain, Coffee, Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { usePomodoro, fmt } from '../contexts/PomodoroContext'
 import { useIsMobile } from '../hooks/useIsMobile'
 
@@ -41,6 +41,7 @@ export function PomodoroWidget() {
   const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState(null)
+  const [docked, setDocked] = useState(null) // null | 'left' | 'right' 
   const drag = useRef({ on: false, moved: false, ox: 0, oy: 0, justDragged: false })
   const btnRef = useRef(null)
   const posKey = isMobile ? POS_KEY_MOBILE : POS_KEY_DESKTOP
@@ -55,6 +56,7 @@ export function PomodoroWidget() {
       saved?.y ?? (window.innerHeight - BTN - gap),
       isMobile
     ))
+    setDocked(saved?.docked || null)
   }, [isMobile, posKey])
 
   // Reajustar si cambia el tamaño de la ventana
@@ -81,8 +83,52 @@ export function PomodoroWidget() {
     btnRef.current.releasePointerCapture?.(e.pointerId)
     if (drag.current.moved) {
       drag.current.justDragged = true
-      setPos(pp => { if (pp) localStorage.setItem(posKey, JSON.stringify(pp)); return pp })
+      setPos(pp => {
+        if (!pp) return pp
+        const w = window.innerWidth
+        let side = null
+        if (pp.x <= 10) side = 'left'
+        else if (pp.x >= w - BTN - 10) side = 'right'
+        setDocked(side)
+        localStorage.setItem(posKey, JSON.stringify({ ...pp, docked: side }))
+        return pp
+      })
     }
+  }
+
+  // --- Pestana lateral cuando esta oculto en el borde ---
+  const tabDrag = useRef({ on: false, moved: false, oy: 0, sx: 0 })
+  const onTabDown = (e) => {
+    tabDrag.current = { on: true, moved: false, oy: e.clientY - (pos?.y ?? 0), sx: e.clientX }
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+  }
+  const onTabMove = (e) => {
+    if (!tabDrag.current.on) return
+    tabDrag.current.moved = true
+    const y = Math.min(Math.max(70, e.clientY - tabDrag.current.oy), window.innerHeight - 60)
+    setPos(pp => (pp ? { ...pp, y } : pp))
+    // si lo arrastra hacia adentro, se despliega
+    const dx = e.clientX - tabDrag.current.sx
+    if ((docked === 'left' && dx > 34) || (docked === 'right' && dx < -34)) {
+      tabDrag.current.on = false
+      undock()
+    }
+  }
+  const onTabUp = () => {
+    if (!tabDrag.current.on) return
+    tabDrag.current.on = false
+    if (!tabDrag.current.moved) undock() // toque simple: desplegar
+    else setPos(pp => { if (pp) localStorage.setItem(posKey, JSON.stringify({ ...pp, docked })); return pp })
+  }
+  const undock = () => {
+    setDocked(null)
+    setPos(pp => {
+      if (!pp) return pp
+      const w = window.innerWidth
+      const next = { x: docked === 'left' ? 14 : w - BTN - 14, y: pp.y }
+      localStorage.setItem(posKey, JSON.stringify({ ...next, docked: null }))
+      return next
+    })
   }
 
   const onClick = () => {
@@ -106,6 +152,23 @@ export function PomodoroWidget() {
     panelStyle = below
       ? { position: 'fixed', left, top: pos.y + BTN + 8 }
       : { position: 'fixed', left, bottom: window.innerHeight - pos.y + 8 }
+  }
+
+  if (docked) {
+    const Arrow = docked === 'left' ? ChevronRight : ChevronLeft
+    return (
+      <button aria-label="Mostrar temporizador de enfoque"
+        onPointerDown={onTabDown} onPointerMove={onTabMove} onPointerUp={onTabUp}
+        className="fixed z-[80] touch-none glass-strong border hairline shadow-lg active:scale-95 transition-transform"
+        style={{
+          top: pos?.y ?? 200, width: 26, height: 52,
+          [docked]: 0,
+          borderRadius: docked === 'left' ? '0 14px 14px 0' : '14px 0 0 14px',
+          ...(p.running ? { boxShadow: `inset 0 0 0 2px ${color}55` } : {}),
+        }}>
+        <Arrow size={16} className="mx-auto" style={{ color }} />
+      </button>
+    )
   }
 
   return (

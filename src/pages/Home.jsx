@@ -120,7 +120,7 @@ export default function Home() {
                     className="flex items-center gap-3 py-2.5 border-b hairline last:border-0 text-left">
                     <span className="w-1.5 h-8 rounded-full shrink-0" style={{ backgroundColor: color }} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate flex items-center gap-1.5">
+                      <p className="text-sm font-medium truncate flex items-center gap-1.5 min-w-0">
                         {meeting && <Video size={13} className="shrink-0" style={{ color }} />}
                         {e.title}
                       </p>

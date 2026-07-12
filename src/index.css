@@ -37,6 +37,9 @@ html, body {
   overflow-x: clip;
   max-width: 100vw;
 }
+/* Los hijos de grid y flex no pueden forzar un ancho mayor que su contenedor
+   (el min-width:auto por defecto rompe truncate y desborda en movil) */
+.grid > * { min-width: 0; }
 
 body {
   background: var(--bg);
