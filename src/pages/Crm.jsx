@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 import { Plus, Trash2, Handshake, Phone, Mail, Users, StickyNote, AlarmClock, Euro, X } from 'lucide-react'
 import { useCrm, useClientInteractions, CRM_STAGES, daysToRenewal } from '../hooks/useCrm'
 import { useWorkspaces, useKnownContacts } from '../hooks/useWorkspaces'
@@ -216,6 +217,7 @@ function Interactions({ clientId }) {
 }
 
 export default function Crm() {
+  const isMobile = useIsMobile()
   const { clients, loading, createClient, updateClient, deleteClient, moveToStage } = useCrm()
   const { workspaces } = useWorkspaces()
   const contacts = useKnownContacts()
@@ -269,7 +271,51 @@ export default function Crm() {
         </div>
       )}
 
-      {loading ? <p className="text-sm text-2">Cargando…</p> : (
+      {loading ? <p className="text-sm text-2">Cargando…</p> : isMobile ? (
+        <div className="flex flex-col gap-5">
+          {CRM_STAGES.map(stage => {
+            const list = byStage[stage.id]
+            if (!list.length) return null
+            return (
+              <section key={stage.id} className="anim-rise">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: stage.color }} />
+                  <h2 className="text-sm font-semibold">{stage.label}</h2>
+                  <span className="text-xs text-2">{list.length}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {list.map(c => (
+                    <div key={c.id} onClick={() => setModal({ client: c })}
+                      className="surface rounded-ios border hairline p-3.5 active:scale-[.99] transition-transform">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-semibold leading-snug">{c.name}</p>
+                        {c.owner && <Avatar profile={c.owner} size={24} />}
+                      </div>
+                      {c.services && <p className="text-xs text-2 mt-0.5 line-clamp-2">{c.services}</p>}
+                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                        {c.fee != null && (
+                          <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold surface-2 rounded-full px-2 py-0.5">
+                            <Euro size={10} /> {money(Number(c.fee), c.currency)}
+                          </span>
+                        )}
+                        {c.workspace && (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-2">
+                            <WorkspaceIcon icon={c.workspace.icon} color={c.workspace.color} size={14} /> {c.workspace.name}
+                          </span>
+                        )}
+                        <RenewalBadge client={c} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )
+          })}
+          {clients.length === 0 && (
+            <p className="text-sm text-2 text-center py-8">Sin clientes todavía. Crea el primero con el botón «Cliente».</p>
+          )}
+        </div>
+      ) : (
         <div className="flex gap-3 overflow-x-auto pb-4 -mx-5 px-5 sm:-mx-8 sm:px-8">
           {CRM_STAGES.map(stage => (
             <div key={stage.id}

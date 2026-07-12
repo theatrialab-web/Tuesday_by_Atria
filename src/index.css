@@ -218,3 +218,51 @@ input:focus-visible, button:focus-visible, textarea:focus-visible, [tabindex]:fo
   to { transform: translateX(0); }
 }
 .anim-drawer { animation: drawer-in .32s cubic-bezier(.32, .72, .35, 1); }
+
+/* ===== Editor en vivo de comentarios (el texto se ve formateado mientras escribes) ===== */
+.rt-live { position: relative; }
+.rt-live__render {
+  pointer-events: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.rt-live__input {
+  position: absolute; inset: 0;
+  color: transparent;
+  caret-color: var(--text);
+  background: transparent;
+  resize: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.rt-live__input::selection { background: rgba(67,24,201,0.25); color: transparent; }
+.rt-b { text-shadow: 0 0 0.65px currentColor, 0 0 0.65px currentColor; }
+.rt-i { display: inline-block; transform: skewX(-9deg); }
+.rt-s { text-decoration: line-through; }
+.rt-dim { opacity: 0.32; }
+.rt-m { color: #4318C9; font-weight: inherit; }
+.dark .rt-m { color: #C7B8FF; }
+.rt-u { color: #4318C9; text-decoration: underline; text-underline-offset: 2px; }
+.dark .rt-u { color: #C7B8FF; }
+
+/* ===== Micro-animaciones ===== */
+@keyframes check-pop {
+  0% { transform: scale(0.6); }
+  55% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.anim-checkpop { animation: check-pop .28s cubic-bezier(.34,1.56,.64,1); }
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.anim-rise { animation: rise-in .34s cubic-bezier(.22,1,.36,1) both; }
+
+/* Icono activo del tab bar con rebote */
+@keyframes tab-bounce {
+  0% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-3px) scale(1.14); }
+  100% { transform: translateY(0) scale(1.08); }
+}
+.tab-active-icon { animation: tab-bounce .32s cubic-bezier(.34,1.56,.64,1) both; }

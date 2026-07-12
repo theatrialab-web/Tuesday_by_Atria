@@ -279,28 +279,42 @@ function Sidebar() {
 
 function BottomNav({ onCreate }) {
   const { unreadCount } = useNotifications()
-  const item = 'flex flex-col items-center justify-center flex-1 py-1.5 text-[10px] gap-0.5'
+  const item = 'flex flex-col items-center justify-center flex-1 pt-2 pb-1.5 text-[11px] font-medium gap-1'
   const active = ({ isActive }) => `${item} ${isActive ? 'text-brand dark:text-white' : 'text-2'}`
+  const Ico = ({ icon: I, isActive }) => (
+    <I size={24} strokeWidth={isActive ? 2.2 : 1.8} className={isActive ? 'tab-active-icon' : 'transition-transform'} />
+  )
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 glass border-t hairline flex items-stretch pb-[env(safe-area-inset-bottom)]">
-      <NavLink to="/" end className={active}><Home size={21} />Inicio</NavLink>
-      <NavLink to="/mis-tareas" className={active}><CircleCheck size={21} />Tareas</NavLink>
+      <NavLink to="/" end className={active}>
+        {({ isActive }) => (<><Ico icon={Home} isActive={isActive} />Inicio</>)}
+      </NavLink>
+      <NavLink to="/mis-tareas" className={active}>
+        {({ isActive }) => (<><Ico icon={CircleCheck} isActive={isActive} />Tareas</>)}
+      </NavLink>
       <button onClick={onCreate} aria-label="Crear"
-        className="flex items-center justify-center w-14 -mt-4 mx-1">
-        <span className="w-12 h-12 rounded-full btn-brand flex items-center justify-center shadow-lg active:scale-95 transition-transform">
-          <Plus size={24} />
+        className="flex items-center justify-center w-16 -mt-5 mx-0.5">
+        <span className="w-[54px] h-[54px] rounded-full btn-brand flex items-center justify-center shadow-lg active:scale-90 active:rotate-90 transition-transform duration-200">
+          <Plus size={26} />
         </span>
       </button>
+      <NavLink to="/calendario" className={active}>
+        {({ isActive }) => (<><Ico icon={CalendarDays} isActive={isActive} />Agenda</>)}
+      </NavLink>
       <NavLink to="/notificaciones" className={active}>
-        <span className="relative">
-          <Bell size={21} />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-0.5 rounded-full bg-[#E2445C] text-white text-[9px] font-semibold flex items-center justify-center">
-              {unreadCount > 9 ? '9+' : unreadCount}
+        {({ isActive }) => (
+          <>
+            <span className="relative">
+              <Ico icon={Bell} isActive={isActive} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1.5 min-w-[16px] h-[16px] px-0.5 rounded-full bg-[#E2445C] text-white text-[9px] font-semibold flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </span>
-          )}
-        </span>
-        Avisos
+            Avisos
+          </>
+        )}
       </NavLink>
     </nav>
   )
@@ -316,11 +330,11 @@ function MobileTopBar() {
   return (
     <>
       <header className="md:hidden fixed top-0 inset-x-0 z-40 glass border-b hairline pt-[env(safe-area-inset-top)]">
-        <div className="h-12 flex items-center justify-between px-4">
-          <Brand logoHeight={15} />
+        <div className="h-14 flex items-center justify-between px-4">
+          <Brand logoHeight={18} />
           <button onClick={() => setOpen(true)} aria-label="Menú"
-            className="p-2 -mr-2 rounded-full text-1 active:scale-90 transition-transform">
-            <Menu size={22} />
+            className="p-2.5 -mr-2 rounded-full active:scale-90 transition-transform">
+            <Menu size={26} strokeWidth={2} />
           </button>
         </div>
       </header>

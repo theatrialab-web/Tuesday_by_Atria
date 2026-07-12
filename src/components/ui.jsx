@@ -18,7 +18,7 @@ export function Checkbox({ checked, onChange, size = 18, green = false, classNam
       className={`shrink-0 grid place-items-center rounded-[6px] border transition-colors ${
         checked ? (green ? 'text-white' : 'bg-brand border-brand text-white') : 'surface hairline border hover:border-brand'
       } ${className}`}>
-      {checked && <Check size={Math.round(size * 0.66)} strokeWidth={3} />}
+      {checked && <Check size={Math.round(size * 0.66)} strokeWidth={3} className="anim-checkpop" />}
     </button>
   )
 }
@@ -77,7 +77,7 @@ export function Modal({ open, onClose, title, children, wide = false }) {
   }, [open, onClose])
 
   if (!open) return null
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm anim-fade" onClick={onClose} />
       <div
@@ -93,7 +93,8 @@ export function Modal({ open, onClose, title, children, wide = false }) {
         </div>
         <div className="p-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

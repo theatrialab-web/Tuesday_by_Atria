@@ -68,8 +68,8 @@ export default function Home() {
 
   return (
     <div className="p-5 sm:p-8 max-w-5xl mx-auto">
-      <div className="mb-5"><Brand logoHeight={20} /></div>
-      <h1 className="text-2xl font-semibold mb-6">Hola, {profile?.full_name?.split(' ')[0] || ''} 👋</h1>
+      <div className="mb-5 hidden md:block"><Brand logoHeight={20} /></div>
+      <h1 className="text-2xl font-semibold mb-6 text-center md:text-left anim-rise">Hola, {profile?.full_name?.split(' ')[0] || ''} 👋</h1>
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Workspaces */}

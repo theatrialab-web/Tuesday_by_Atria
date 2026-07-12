@@ -230,17 +230,34 @@ function Comments({ task, boardId, members }) {
     return true
   }
 
-  // Vista previa en vivo del formato (solo si hay algo que renderizar distinto)
-  const hasRich = (t) => /\*\*|__|~~|_[^_]+_|https?:\/\/|www\.|@/.test(t)
-  const Preview = ({ text }) => {
-    if (!text?.trim() || !hasRich(text)) return null
-    return (
-      <div className="mt-1.5 pt-1.5 border-t hairline">
-        <p className="text-[10px] uppercase tracking-wide text-2 mb-0.5">Vista previa</p>
-        <p className="text-sm break-words" dangerouslySetInnerHTML={{ __html: renderRich(text, memberNames) }} />
-      </div>
-    )
+  // Editor en vivo: el texto se ve formateado mientras escribes (marcadores atenuados).
+  // Un div renderizado detras y un textarea transparente encima, con las mismas metricas.
+  const renderLive = (text) => {
+    let t = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    t = t.replace(/\b(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi, '<span class="rt-u">$1</span>')
+    t = t.replace(/\*\*([^*\n]+)\*\*/g, '<span class="rt-dim">**</span><span class="rt-b">$1</span><span class="rt-dim">**</span>')
+    t = t.replace(/~~([^~\n]+)~~/g, '<span class="rt-dim">~~</span><span class="rt-s">$1</span><span class="rt-dim">~~</span>')
+    t = t.replace(/_([^_\n]+)_/g, '<span class="rt-dim">_</span><span class="rt-i">$1</span><span class="rt-dim">_</span>')
+    for (const name of memberNames) {
+      if (!name) continue
+      const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      t = t.replace(new RegExp('@' + esc, 'g'), '<span class="rt-m">@' + name + '</span>')
+    }
+    return t
   }
+
+  const RichArea = ({ inputRef: ref, value, onChange, onKeyDown, placeholder }) => (
+    <div className="rt-live flex-1 min-w-0">
+      <div aria-hidden className="rt-live__render text-sm min-h-[24px] max-h-72 overflow-hidden">
+        {value
+          ? <span dangerouslySetInnerHTML={{ __html: renderLive(value) + '\n' }} />
+          : <span className="text-2">{placeholder}</span>}
+      </div>
+      <textarea ref={ref} value={value} onChange={onChange} onKeyDown={onKeyDown}
+        onScroll={(e) => { const r = e.target.parentElement.firstChild; if (r) r.scrollTop = e.target.scrollTop }}
+        className="rt-live__input text-sm outline-none overflow-y-auto" aria-label={placeholder} />
+    </div>
+  )
 
   const suggestions = mentionQuery !== null
     ? members.filter(m => (m.full_name || m.email || '').toLowerCase().includes(mentionQuery)).slice(0, 5)
@@ -278,11 +295,11 @@ function Comments({ task, boardId, members }) {
                     )}
                     <div className="surface-2 rounded-ios-sm px-3 py-2">
                       <FormatToolbar targetRef={editRef} onApply={applyToEdit} />
-                      <textarea ref={editRef} value={editDraft} rows={2}
-                        onChange={onEditDraftChange}
-                        onKeyDown={e => handleShortcut(e, editRef, applyToEdit)}
-                        className="w-full bg-transparent text-sm resize-y min-h-[44px] max-h-72 mt-1.5" />
-                      <Preview text={editDraft} />
+                      <div className="mt-1.5">
+                        {RichArea({ inputRef: editRef, value: editDraft, onChange: onEditDraftChange,
+                          onKeyDown: e => handleShortcut(e, editRef, applyToEdit),
+                          placeholder: 'Editar comentario…' })}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-2 mt-1.5">
@@ -322,19 +339,17 @@ function Comments({ task, boardId, members }) {
         <div className="surface-2 rounded-ios-sm px-3 py-2">
           <FormatToolbar targetRef={inputRef} onApply={applyToDraft} />
           <div className="flex items-end gap-2 mt-1.5">
-            <textarea ref={inputRef} value={draft} onChange={onDraftChange} rows={1}
-              onKeyDown={e => {
+            {RichArea({ inputRef, value: draft, onChange: onDraftChange,
+              onKeyDown: e => {
                 if (handleShortcut(e, inputRef, applyToDraft)) return
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
-              }}
-              placeholder="Comentar… (@ menciona · Ctrl+B, Ctrl+I, Ctrl+Shift+S tacha)"
-              className="flex-1 bg-transparent text-sm resize-y placeholder:text-2 min-h-[36px] max-h-72" />
+              },
+              placeholder: 'Comentar… (@ menciona · Ctrl+B, Ctrl+I, Ctrl+Shift+S tacha)' })}
             <button onClick={send} disabled={!draft.trim()} aria-label="Enviar comentario"
               className="p-1.5 rounded-full btn-brand disabled:opacity-30">
               <Send size={14} />
             </button>
           </div>
-          <Preview text={draft} />
         </div>
       </div>
     </section>
