@@ -82,19 +82,45 @@ export default function Home() {
             </div>
           </div>
           {loading ? <p className="text-sm text-2">Cargando…</p> : (
-            <div className="flex flex-wrap gap-2.5">
-              {workspaces.map(ws => (
-                <button key={ws.id} onClick={() => navigate(`/workspace/${ws.id}`)}
-                  className="flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-full surface border hairline active:scale-95 transition-transform">
-                  <WorkspaceIcon icon={ws.icon} color={ws.color} size={28} round />
-                  <span className="text-sm font-medium max-w-[160px] truncate">{ws.name}</span>
+            <>
+              {/* Movil: bandeja horizontal tipo stories (anillo de color + nombre) */}
+              <div className="md:hidden flex gap-3.5 overflow-x-auto no-scrollbar snap-x -mx-5 px-5 pb-1">
+                {workspaces.map(ws => (
+                  <button key={ws.id} onClick={() => navigate(`/workspace/${ws.id}`)}
+                    className="snap-start shrink-0 w-[74px] flex flex-col items-center gap-1.5 active:scale-95 transition-transform">
+                    <span className="rounded-full p-[2.5px]"
+                      style={{ background: `conic-gradient(from 210deg, ${ws.color || '#4318C9'}, #C7B8FF, ${ws.color || '#4318C9'})` }}>
+                      <span className="block rounded-full p-[2.5px] surface">
+                        <WorkspaceIcon icon={ws.icon} color={ws.color} size={54} round />
+                      </span>
+                    </span>
+                    <span className="text-[11px] font-medium w-full truncate text-center leading-tight">{ws.name}</span>
+                  </button>
+                ))}
+                <button onClick={() => setCreateOpen(true)}
+                  className="snap-start shrink-0 w-[74px] flex flex-col items-center gap-1.5 active:scale-95 transition-transform">
+                  <span className="w-[63px] h-[63px] rounded-full border-2 border-dashed hairline grid place-items-center text-2">
+                    <Plus size={22} />
+                  </span>
+                  <span className="text-[11px] font-medium text-2">Nuevo</span>
                 </button>
-              ))}
-              <button onClick={() => setCreateOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-dashed hairline text-2 hover:text-1 active:scale-95 transition-transform">
-                <Plus size={16} /> <span className="text-sm font-medium">Nuevo</span>
-              </button>
-            </div>
+              </div>
+
+              {/* Escritorio: chips como antes */}
+              <div className="hidden md:flex flex-wrap gap-2.5">
+                {workspaces.map(ws => (
+                  <button key={ws.id} onClick={() => navigate(`/workspace/${ws.id}`)}
+                    className="flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-full surface border hairline active:scale-95 transition-transform">
+                    <WorkspaceIcon icon={ws.icon} color={ws.color} size={28} round />
+                    <span className="text-sm font-medium max-w-[160px] truncate">{ws.name}</span>
+                  </button>
+                ))}
+                <button onClick={() => setCreateOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-dashed hairline text-2 hover:text-1 active:scale-95 transition-transform">
+                  <Plus size={16} /> <span className="text-sm font-medium">Nuevo</span>
+                </button>
+              </div>
+            </>
           )}
         </section>
 

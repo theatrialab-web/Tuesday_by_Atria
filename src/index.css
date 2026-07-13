@@ -257,3 +257,7 @@ input:focus-visible, button:focus-visible, textarea:focus-visible, [tabindex]:fo
   100% { transform: translateY(0) scale(1.08); }
 }
 .tab-active-icon { animation: tab-bounce .32s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* Carrusel sin barra de scroll visible */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
